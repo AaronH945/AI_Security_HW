@@ -58,27 +58,6 @@ AI_Security_HW/
 └── Final/            # Final Capstone Project
 ```
 
----
-
-## 🛠️ Overview of Topics
-
-- Adversarial Attacks and Defenses in Machine Learning
-- Model Robustness and Evaluation
-- Data Poisoning and Backdoor Attacks
-- Privacy-Preserving Machine Learning & Differential Privacy
-- LLM Security & Prompt Injection Defenses
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.8+
-- PyTorch / TensorFlow (as required per assignment)
-- Jupyter Notebook / Lab
-
----
-
 ## 📝 License
 
 This project is for educational and coursework purposes.
