@@ -1,0 +1,22 @@
+{
+  "name": "ai-security-coursework-hub",
+  "version": "1.0.0",
+  "description": "AI Security Coursework Hub & L03 CWA Weather Station PostgreSQL Map",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "keywords": [
+    "cwa",
+    "weather",
+    "postgresql",
+    "leaflet",
+    "taiwan",
+    "vercel"
+  ],
+  "author": "Aaron Huang",
+  "license": "MIT"
+}

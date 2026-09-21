@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Security Lab 03 - CWA 自動氣象站觀測地圖與 PostgreSQL 雲端資料庫系統">
+  <title>Lab 03: CWA 自動氣象站觀測地圖 // AI Security</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="cyan">
+  <!-- Ambient Atmosphere -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="hud-scanline"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="app-layout">
+    <!-- Top HUD Navigation & Telemetry Bar -->
+    <header class="hud-header">
+      <div class="header-left">
+        <a href="../" class="btn-back-hub" title="返回總首頁 (Main Portal)">
+          <span class="icon-arrow">◀</span>
+          <span class="btn-text">MAIN HUB</span>
+        </a>
+        <div class="header-title-group">
+          <div class="hud-tag-wrapper">
+            <span class="hud-bracket">[</span>
+            <span class="hud-tag">AI SECURITY PROTOCOL // L03</span>
+            <span class="hud-bracket">]</span>
+          </div>
+          <h1 class="system-title">CWA 台灣自動氣象站觀測系統</h1>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- PostgreSQL & Sync Telemetry -->
+        <div class="telemetry-box" id="sync-telemetry-box" title="最後資料庫/CWA同步狀態">
+          <div class="telemetry-indicator">
+            <span class="pulse-dot" id="db-status-dot"></span>
+            <span class="telemetry-label" id="db-status-label">POSTGRESQL // CONNECTED</span>
+          </div>
+          <div class="telemetry-time">
+            <span>最後更新: </span>
+            <strong id="last-sync-time">載入中...</strong>
+          </div>
+        </div>
+
+        <!-- Sync Button -->
+        <button class="btn-sync" id="btn-force-sync" title="向 CWA 與 PostgreSQL 發送同步指令">
+          <svg class="icon-sync" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+          <span id="sync-btn-text">即時同步</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Map Workspace -->
+    <main class="workspace-container">
+      <!-- Left Filter & Station Inspector Sidebar -->
+      <aside class="hud-sidebar" id="hud-sidebar">
+        <!-- Search & Filter Controls -->
+        <div class="sidebar-section filter-panel">
+          <div class="section-badge">
+            <span class="badge-icon">🔍</span>
+            <span>測站檢索與篩選</span>
+          </div>
+
+          <div class="input-group">
+            <input type="text" id="search-input" placeholder="搜尋測站名稱 / 鄉鎮區..." autocomplete="off">
+            <button id="btn-clear-search" class="btn-clear" style="display: none;">✕</button>
+          </div>
+
+          <div class="select-group">
+            <select id="county-select">
+              <option value="ALL">全台灣所有縣市 (All Counties)</option>
+              <option value="臺北市">臺北市 (Taipei)</option>
+              <option value="新北市">新北市 (New Taipei)</option>
+              <option value="基隆市">基隆市 (Keelung)</option>
+              <option value="桃園市">桃園市 (Taoyuan)</option>
+              <option value="新竹市">新竹市 (Hsinchu City)</option>
+              <option value="新竹縣">新竹縣 (Hsinchu County)</option>
+              <option value="苗栗縣">苗栗縣 (Miaoli)</option>
+              <option value="臺中市">臺中市 (Taichung)</option>
+              <option value="彰化縣">彰化縣 (Changhua)</option>
+              <option value="南投縣">南投縣 (Nantou)</option>
+              <option value="雲林縣">雲林縣 (Yunlin)</option>
+              <option value="嘉義市">嘉義市 (Chiayi City)</option>
+              <option value="嘉義縣">嘉義縣 (Chiayi County)</option>
+              <option value="臺南市">臺南市 (Tainan)</option>
+              <option value="高雄市">高雄市 (Kaohsiung)</option>
+              <option value="屏東縣">屏東縣 (Pingtung)</option>
+              <option value="宜蘭縣">宜蘭縣 (Yilan)</option>
+              <option value="花蓮縣">花蓮縣 (Hualien)</option>
+              <option value="臺東縣">臺東縣 (Taitung)</option>
+              <option value="澎湖縣">澎湖縣 (Penghu)</option>
+              <option value="金門縣">金門縣 (Kinmen)</option>
+              <option value="連江縣">連江縣 (Matsu)</option>
+            </select>
+          </div>
+
+          <div class="station-count-chip">
+            <span>顯示測站: </span>
+            <strong id="visible-station-count">0</strong> / <span id="total-station-count">0</span>
+          </div>
+        </div>
+
+        <!-- Selected Station Detail Inspector -->
+        <div class="sidebar-section inspector-panel" id="inspector-panel">
+          <div class="section-badge">
+            <span class="badge-icon">📡</span>
+            <span>測站即時觀測遙測 (Telemetry)</span>
+          </div>
+
+          <div class="station-empty-state" id="station-empty-state">
+            <div class="radar-scan-icon"></div>
+            <p>點擊地圖上的測站 Marker<br>以檢視即時氣象詳細數據</p>
+          </div>
+
+          <div class="station-detail-content" id="station-detail-content" style="display: none;">
+            <div class="station-title-header">
+              <h2 id="inspect-station-name">測站名稱</h2>
+              <span class="station-id-tag" id="inspect-station-id">ID: 000000</span>
+            </div>
+            <div class="station-location-row" id="inspect-station-location">縣市 / 行政區</div>
+
+            <!-- Weather Metrics Grid -->
+            <div class="metrics-grid">
+              <!-- Temperature -->
+              <div class="metric-card metric-temp" id="metric-temp-card">
+                <div class="metric-icon">🌡️</div>
+                <div class="metric-body">
+                  <span class="metric-label">氣溫</span>
+                  <div class="metric-value-wrap">
+                    <span class="metric-value" id="inspect-temp">--</span>
+                    <span class="metric-unit">°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Humidity -->
+              <div class="metric-card metric-hum">
+                <div class="metric-icon">💧</div>
+                <div class="metric-body">
+                  <span class="metric-label">相對濕度</span>
+                  <div class="metric-value-wrap">
+                    <span class="metric-value" id="inspect-humidity">--</span>
+                    <span class="metric-unit">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rainfall -->
+              <div class="metric-card metric-rain">
+                <div class="metric-icon">🌧️</div>
+                <div class="metric-body">
+                  <span class="metric-label">累積雨量</span>
+                  <div class="metric-value-wrap">
+                    <span class="metric-value" id="inspect-rainfall">--</span>
+                    <span class="metric-unit">mm</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Wind / Elevation -->
+              <div class="metric-card metric-wind">
+                <div class="metric-icon">🧭</div>
+                <div class="metric-body">
+                  <span class="metric-label">風速 / 海拔</span>
+                  <div class="metric-value-wrap">
+                    <span class="metric-value" id="inspect-wind">--</span>
+                    <span class="metric-unit" id="inspect-wind-unit">m/s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coordinates & Obs Time -->
+            <div class="telemetry-footer-info">
+              <div class="info-row">
+                <span class="info-label">📍 經緯座標:</span>
+                <span class="info-val" id="inspect-coords">--</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">🕒 觀測時間:</span>
+                <span class="info-val" id="inspect-obs-time">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature Color Scale Legend -->
+        <div class="sidebar-section legend-panel">
+          <div class="section-badge">
+            <span class="badge-icon">🎨</span>
+            <span>氣溫色階圖例 (Temperature Legend)</span>
+          </div>
+
+          <div class="legend-list">
+            <div class="legend-item"><span class="color-box temp-lt15"></span> <span>&lt; 15°C (低溫寒冷)</span></div>
+            <div class="legend-item"><span class="color-box temp-15-20"></span> <span>15 ~ 20°C (涼爽)</span></div>
+            <div class="legend-item"><span class="color-box temp-20-25"></span> <span>20 ~ 25°C (舒適宜人)</span></div>
+            <div class="legend-item"><span class="color-box temp-25-30"></span> <span>25 ~ 30°C (溫暖)</span></div>
+            <div class="legend-item"><span class="color-box temp-30-35"></span> <span>30 ~ 35°C (炎熱高溫)</span></div>
+            <div class="legend-item"><span class="color-box temp-gte35"></span> <span>&ge; 35°C (酷熱警告)</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Map Container -->
+      <section class="map-viewport">
+        <div id="taiwan-map" class="taiwan-map"></div>
+
+        <!-- Floating Map Telemetry Overlay -->
+        <div class="map-hud-overlay">
+          <div class="map-hud-pill">
+            <span class="hud-pill-dot"></span>
+            <span>TAIWAN METEOROLOGICAL GRID // LIVE</span>
+          </div>
+          <div class="map-zoom-controls">
+            <button id="btn-zoom-taiwan" title="重新聚焦台灣全島">全島視角 🇹🇼</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">⚡ 資料已更新！</div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
