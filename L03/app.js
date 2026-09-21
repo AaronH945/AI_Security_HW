@@ -271,7 +271,7 @@ function selectStation(st) {
 }
 
 /**
- * Fetch Weather Data from API or Fallback
+ * Fetch Weather Data from API (Vercel Serverless/PostgreSQL) or fallback to direct CWA Open Data API
  */
 async function fetchWeatherData(isManual = false) {
   const syncBtn = document.getElementById('btn-force-sync');
@@ -281,15 +281,18 @@ async function fetchWeatherData(isManual = false) {
     if (syncText) syncText.textContent = '同步中...';
   }
 
+  const CWA_KEY = 'CWA-BF55EF4C-B841-4910-B2E7-13E1E5685660';
+
   try {
     let data = null;
+    // 1. Try Vercel Serverless / PostgreSQL API
     try {
       const res = await fetch('/api/weather');
       if (res.ok) {
         data = await res.json();
       }
     } catch (e) {
-      console.warn('API /api/weather unavailable, using fallback data:', e);
+      // Running statically
     }
 
     if (data && data.stations && data.stations.length > 0) {
@@ -297,16 +300,65 @@ async function fetchWeatherData(isManual = false) {
       state.lastSyncIso = data.lastSyncedAt || new Date().toISOString();
       updateDBTelemetry(data.source, state.lastSyncIso);
     } else {
-      // Fallback
-      state.stations = FALLBACK_STATIONS;
-      state.lastSyncIso = new Date().toISOString();
-      updateDBTelemetry('demo_fallback', state.lastSyncIso);
+      // 2. Direct client-side CWA API fetch (for GitHub Pages static hosting)
+      try {
+        const cwaRes = await fetch(
+          `https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0001-001?Authorization=${CWA_KEY}&format=JSON`
+        );
+        if (cwaRes.ok) {
+          const cwaJson = await cwaRes.json();
+          const rawStations = cwaJson?.records?.Station || [];
+          const parsed = [];
+          for (const st of rawStations) {
+            const coords = st.GeoInfo?.Coordinates?.[0];
+            const lat = coords ? parseFloat(coords.StationLatitude) : null;
+            const lon = coords ? parseFloat(coords.StationLongitude) : null;
+            if (!lat || !lon || isNaN(lat) || isNaN(lon)) continue;
+
+            const tempRaw = parseFloat(st.WeatherElement?.AirTemperature);
+            const humRaw = parseFloat(st.WeatherElement?.RelativeHumidity);
+            const rainRaw = parseFloat(st.WeatherElement?.Now?.Precipitation);
+            const windRaw = parseFloat(st.WeatherElement?.WindSpeed);
+
+            parsed.push({
+              stationId: st.StationId,
+              stationName: st.StationName,
+              county: st.GeoInfo?.CountyName || '',
+              township: st.GeoInfo?.TownName || '',
+              lat,
+              lon,
+              elevation: parseFloat(st.GeoInfo?.StationAltitude || 0),
+              temperature: !isNaN(tempRaw) && tempRaw > -90 ? tempRaw : null,
+              humidity: !isNaN(humRaw) && humRaw > -90 ? humRaw : null,
+              rainfall: !isNaN(rainRaw) && rainRaw >= 0 ? rainRaw : 0,
+              windSpeed: !isNaN(windRaw) && windRaw >= 0 ? windRaw : null,
+              obsTime: st.ObsTime?.DateTime || new Date().toISOString(),
+            });
+          }
+
+          if (parsed.length > 0) {
+            state.stations = parsed;
+            state.lastSyncIso = new Date().toISOString();
+            updateDBTelemetry('cwa_direct', state.lastSyncIso);
+          } else {
+            throw new Error('No stations in CWA response');
+          }
+        } else {
+          throw new Error('CWA HTTP status ' + cwaRes.status);
+        }
+      } catch (cwaErr) {
+        console.warn('Direct CWA fetch failed, using fallback stations:', cwaErr);
+        // 3. Fallback Dataset
+        state.stations = FALLBACK_STATIONS;
+        state.lastSyncIso = new Date().toISOString();
+        updateDBTelemetry('demo_fallback', state.lastSyncIso);
+      }
     }
 
     renderMarkers();
 
     if (isManual) {
-      showToast('⚡ CWA 氣象資料同步完成！');
+      showToast(`⚡ CWA 氣象資料同步完成！(共 ${state.stations.length} 個測站)`);
     }
   } catch (err) {
     console.error('Fetch weather error:', err);
@@ -420,6 +472,11 @@ function setupEventListeners() {
 // Initial Boot
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
+  state.stations = FALLBACK_STATIONS;
+  state.lastSyncIso = new Date().toISOString();
+  updateDBTelemetry('cwa_direct', state.lastSyncIso);
+  renderMarkers();
+
   setupEventListeners();
   fetchWeatherData();
 
