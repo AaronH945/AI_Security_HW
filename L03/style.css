@@ -1,5 +1,5 @@
 /* ==========================================================================
-   L03: CWA 自動氣象站觀測地圖 // AI Security STARK HUD Style
+   L03: CWA 自動氣象站觀測地圖 // AI Security STARK HUD GIS Style
    ========================================================================== */
 
 :root {
@@ -10,7 +10,7 @@
   --secondary-glow: rgba(255, 170, 0, 0.4);
   
   --bg-deep: #060b13;
-  --bg-panel: rgba(10, 20, 35, 0.85);
+  --bg-panel: rgba(10, 20, 35, 0.88);
   --bg-panel-solid: #0c1828;
   --bg-card: rgba(14, 28, 48, 0.7);
   --bg-card-hover: rgba(20, 42, 70, 0.9);
@@ -170,7 +170,31 @@ body {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+}
+
+/* Mode Badge */
+.gis-mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid var(--primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: var(--font-hud);
+  font-size: 0.7rem;
+  color: var(--primary);
+  letter-spacing: 0.06em;
+}
+
+.mode-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: pulseDot 2s infinite;
 }
 
 .telemetry-box {
@@ -264,14 +288,14 @@ body {
 }
 
 .hud-sidebar {
-  width: 360px;
+  width: 380px;
   background: var(--bg-panel);
   backdrop-filter: blur(16px);
   border-right: 1px solid var(--border-color);
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   overflow-y: auto;
   z-index: 20;
   box-shadow: 4px 0 25px rgba(0, 0, 0, 0.5);
@@ -281,10 +305,10 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .section-badge {
@@ -351,36 +375,310 @@ body {
 
 .select-group select:focus {
   border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.status-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
 .station-count-chip {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 8px;
   border-radius: var(--radius-sm);
-  text-align: right;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .station-count-chip strong {
   color: var(--primary);
 }
 
-/* Selected Station Inspector */
-.station-empty-state {
-  text-align: center;
-  padding: 24px 12px;
-  color: var(--text-muted);
-  font-size: 0.85rem;
+/* ==========================================================================
+   OVERVIEW MODE: 22 COUNTY MINI CARDS GRID
+   ========================================================================== */
+.county-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.county-cards-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.county-cards-grid::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.county-mini-card {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.county-mini-card:hover {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+}
+
+.mini-card-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.mini-card-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-card-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-card-status {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.mini-card-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.mini-card-temp {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.mini-card-count {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+
+/* ==========================================================================
+   DETAIL COUNTY MODE: HEADER & AGGREGATED STATS
+   ========================================================================== */
+.county-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(var(--primary-rgb), 0.2);
+  padding-bottom: 8px;
+}
+
+.btn-back-overview {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-family: var(--font-hud);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-back-overview:hover {
+  background: var(--primary);
+  color: #000;
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.selected-county-title-group {
+  display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.selected-weather-icon {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 0 8px rgba(255, 214, 0, 0.6));
+}
+
+.selected-county-title-group h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.county-status-pill {
+  font-size: 0.72rem;
+  color: var(--primary);
+  background: rgba(0, 212, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+}
+
+.county-aggregate-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.agg-metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.agg-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.agg-val {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Station Chips in County Detail View */
+.county-stations-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sub-badge {
+  font-size: 0.72rem;
+  color: var(--primary);
+  font-family: var(--font-hud);
+}
+
+.station-chips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.station-chip {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.station-chip:hover, .station-chip.active {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.25);
+  transform: translateX(2px);
+}
+
+.chip-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  min-width: 32px;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.chip-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.chip-name {
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.chip-sub {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.chip-telemetry {
+  display: flex;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.no-stations-msg {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 12px;
+}
+
+/* ==========================================================================
+   INSPECTOR PANEL & METRICS
+   ========================================================================== */
+.station-empty-state {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .radar-scan-icon {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border: 1px dashed var(--primary);
   border-radius: 50%;
   position: relative;
@@ -404,12 +702,12 @@ body {
   justify-content: space-between;
 }
 .station-title-header h2 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: #fff;
 }
 .station-id-tag {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   background: rgba(0, 212, 255, 0.15);
   border: 1px solid var(--primary);
   color: var(--primary);
@@ -418,24 +716,24 @@ body {
 }
 
 .station-location-row {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   margin-top: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .metrics-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 
 .metric-card {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -443,7 +741,7 @@ body {
 }
 
 .metric-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .metric-body {
@@ -452,7 +750,7 @@ body {
 }
 
 .metric-label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--text-muted);
   font-family: var(--font-hud);
 }
@@ -465,24 +763,24 @@ body {
 
 .metric-value {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
 }
 
 .metric-unit {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
 }
 
 .telemetry-footer-info {
   background: rgba(0, 0, 0, 0.3);
-  padding: 8px 10px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
+  gap: 3px;
+  font-size: 0.72rem;
   font-family: var(--font-mono);
 }
 
@@ -494,23 +792,44 @@ body {
 .info-val { color: var(--text-muted); }
 
 /* Legend Panel */
-.legend-list {
-  display: flex;
-  flex-direction: column;
+.weather-types-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+
+.weather-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.weather-legend-item .w-icon {
+  font-size: 0.95rem;
+}
+
+.legend-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
 .color-box {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 3px;
   flex-shrink: 0;
 }
@@ -523,7 +842,7 @@ body {
 .temp-gte35 { background: var(--temp-extreme); box-shadow: 0 0 6px var(--temp-extreme); }
 
 /* ==========================================================================
-   MAP VIEWPORT & LEAFLET OVERRIDES
+   MAP VIEWPORT & GIS BADGES
    ========================================================================== */
 .map-viewport {
   flex: 1;
@@ -547,7 +866,7 @@ body {
   z-index: 500;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .map-hud-pill {
@@ -592,7 +911,136 @@ body {
   box-shadow: 0 0 15px var(--primary-glow);
 }
 
-/* Custom Marker Styles */
+/* ==========================================================================
+   GIS COUNTY WEATHER THUMBNAIL BADGE (各縣市天氣縮圖標籤)
+   ========================================================================== */
+.county-thumbnail-icon-wrap {
+  background: transparent;
+  border: none;
+}
+
+.county-weather-thumbnail-badge {
+  background: rgba(8, 18, 32, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(0, 212, 255, 0.4);
+  border-radius: 24px;
+  padding: 4px 10px 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 212, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.county-weather-thumbnail-badge:hover {
+  transform: scale(1.15) translateY(-3px);
+  border-color: #00ffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 212, 255, 0.6);
+  z-index: 9999 !important;
+}
+
+.thumb-icon-halo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.thumb-icon-halo.type-sunny {
+  box-shadow: 0 0 10px rgba(255, 214, 0, 0.5);
+  background: radial-gradient(circle, rgba(255, 214, 0, 0.3) 0%, rgba(0, 0, 0, 0.4) 70%);
+}
+
+.thumb-icon-halo.type-partly-cloudy {
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.25) 0%, rgba(0, 0, 0, 0.4) 70%);
+}
+
+.thumb-icon-halo.type-rain, .thumb-icon-halo.type-shower, .thumb-icon-halo.type-thunderstorm {
+  box-shadow: 0 0 10px rgba(30, 144, 255, 0.6);
+  background: radial-gradient(circle, rgba(30, 144, 255, 0.35) 0%, rgba(0, 0, 0, 0.4) 70%);
+}
+
+.thumb-emoji {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
+}
+
+.thumb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.thumb-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thumb-county-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.thumb-status-tag {
+  font-size: 0.62rem;
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.thumb-temp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thumb-temp {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.thumb-count {
+  font-size: 0.58rem;
+  color: var(--text-dim);
+}
+
+/* County Hover Tooltip */
+.county-hover-tooltip {
+  background: var(--bg-panel-solid) !important;
+  border: 1px solid var(--primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 12px var(--primary-glow) !important;
+  padding: 6px 10px !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.county-map-tooltip .tip-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+.county-map-tooltip .tip-sub {
+  font-size: 0.72rem;
+  color: var(--primary);
+}
+.county-map-tooltip .tip-hint {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Detail Weather Marker Styles */
 .weather-marker-icon {
   background: transparent;
   border: none;
@@ -600,15 +1048,15 @@ body {
 
 .marker-inner-pulse {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
@@ -618,7 +1066,7 @@ body {
 }
 
 .marker-inner-pulse:hover {
-  transform: scale(1.35);
+  transform: scale(1.4);
   z-index: 1000 !important;
 }
 

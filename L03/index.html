@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI Security Lab 03 - CWA 自動氣象站觀測地圖與 PostgreSQL 雲端資料庫系統">
+  <meta name="description" content="AI Security Lab 03 - CWA 台灣自動氣象站觀測系統 // GIS 縣市天氣縮圖與即時遙測">
   <title>Lab 03: CWA 自動氣象站觀測地圖 // AI Security</title>
 
   <!-- Google Fonts -->
@@ -37,11 +37,17 @@
             <span class="hud-tag">AI SECURITY PROTOCOL // L03</span>
             <span class="hud-bracket">]</span>
           </div>
-          <h1 class="system-title">CWA 台灣自動氣象站觀測系統</h1>
+          <h1 class="system-title">CWA 台灣自動氣象站 GIS 遙測系統</h1>
         </div>
       </div>
 
       <div class="header-right">
+        <!-- Mode Indicator Badge -->
+        <div class="gis-mode-badge" id="gis-mode-badge">
+          <span class="mode-pulse-dot"></span>
+          <span id="gis-mode-text">全島縣市縮圖總覽</span>
+        </div>
+
         <!-- PostgreSQL & Sync Telemetry -->
         <div class="telemetry-box" id="sync-telemetry-box" title="最後資料庫/CWA同步狀態">
           <div class="telemetry-indicator">
@@ -66,23 +72,19 @@
 
     <!-- Main Map Workspace -->
     <main class="workspace-container">
-      <!-- Left Filter & Station Inspector Sidebar -->
+      <!-- Left Filter, County Overview & Station Inspector Sidebar -->
       <aside class="hud-sidebar" id="hud-sidebar">
-        <!-- Search & Filter Controls -->
+        
+        <!-- Search & County Selection Panel -->
         <div class="sidebar-section filter-panel">
           <div class="section-badge">
-            <span class="badge-icon">🔍</span>
-            <span>測站檢索與篩選</span>
-          </div>
-
-          <div class="input-group">
-            <input type="text" id="search-input" placeholder="搜尋測站名稱 / 鄉鎮區..." autocomplete="off">
-            <button id="btn-clear-search" class="btn-clear" style="display: none;">✕</button>
+            <span class="badge-icon">🗺️</span>
+            <span>GIS 縣市導覽與搜尋</span>
           </div>
 
           <div class="select-group">
-            <select id="county-select">
-              <option value="ALL">全台灣所有縣市 (All Counties)</option>
+            <select id="county-select" title="選擇縣市展開氣象細節">
+              <option value="ALL">🌐 全台灣所有縣市 (總覽縮圖模式)</option>
               <option value="臺北市">臺北市 (Taipei)</option>
               <option value="新北市">新北市 (New Taipei)</option>
               <option value="基隆市">基隆市 (Keelung)</option>
@@ -108,9 +110,72 @@
             </select>
           </div>
 
-          <div class="station-count-chip">
-            <span>顯示測站: </span>
-            <strong id="visible-station-count">0</strong> / <span id="total-station-count">0</span>
+          <div class="input-group">
+            <input type="text" id="search-input" placeholder="搜尋測站名稱 / 鄉鎮區..." autocomplete="off">
+            <button id="btn-clear-search" class="btn-clear" style="display: none;">✕</button>
+          </div>
+
+          <div class="status-summary-bar">
+            <span id="gis-tip-text">💡 點選地圖縣市區塊或縮圖展開細節</span>
+            <span class="station-count-chip"><strong id="visible-station-count">0</strong> 測站</span>
+          </div>
+        </div>
+
+        <!-- Dynamic County View Section (Switches between National Overview & Selected County Details) -->
+        <div class="sidebar-section county-section" id="county-section">
+          <!-- Overview Mode Content: List of all 22 County mini cards -->
+          <div id="overview-counties-view">
+            <div class="section-badge">
+              <span class="badge-icon">🌤️</span>
+              <span>全台 22 縣市即時天氣縮圖</span>
+            </div>
+            <div class="county-cards-grid" id="county-cards-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Detail Mode Content: Selected County Banner & Station List -->
+          <div id="detail-county-view" style="display: none;">
+            <div class="county-detail-header">
+              <button class="btn-back-overview" id="btn-sidebar-back-overview" title="返回全島總覽">
+                <span>◀ 全島總覽</span>
+              </button>
+              <div class="selected-county-title-group">
+                <span class="selected-weather-icon" id="detail-county-weather-icon">☀️</span>
+                <div>
+                  <h2 id="detail-county-name">臺北市</h2>
+                  <span class="county-status-pill" id="detail-county-status">晴時多雲</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- County Aggregated Metrics -->
+            <div class="county-aggregate-metrics">
+              <div class="agg-metric-box">
+                <span class="agg-label">平均氣溫</span>
+                <span class="agg-val" id="detail-county-avg-temp">--°C</span>
+              </div>
+              <div class="agg-metric-box">
+                <span class="agg-label">平均濕度</span>
+                <span class="agg-val" id="detail-county-avg-hum">--%</span>
+              </div>
+              <div class="agg-metric-box">
+                <span class="agg-label">累積雨量</span>
+                <span class="agg-val" id="detail-county-avg-rain">-- mm</span>
+              </div>
+              <div class="agg-metric-box">
+                <span class="agg-label">測站數量</span>
+                <span class="agg-val" id="detail-county-station-count">--</span>
+              </div>
+            </div>
+
+            <!-- Stations in this county -->
+            <div class="county-stations-list-container">
+              <div class="sub-badge">📍 轄區內自動氣象測站 (點擊定位)</div>
+              <div class="station-chips-list" id="county-stations-list">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -123,7 +188,7 @@
 
           <div class="station-empty-state" id="station-empty-state">
             <div class="radar-scan-icon"></div>
-            <p>點擊地圖上的測站 Marker<br>以檢視即時氣象詳細數據</p>
+            <p>點擊地圖上的測站 Marker<br>以檢視即時氣象詳細遙測數據</p>
           </div>
 
           <div class="station-detail-content" id="station-detail-content" style="display: none;">
@@ -198,20 +263,27 @@
           </div>
         </div>
 
-        <!-- Temperature Color Scale Legend -->
+        <!-- Weather Legend Panel -->
         <div class="sidebar-section legend-panel">
           <div class="section-badge">
             <span class="badge-icon">🎨</span>
-            <span>氣溫色階圖例 (Temperature Legend)</span>
+            <span>氣象縮圖與色階圖例</span>
+          </div>
+
+          <div class="weather-types-legend">
+            <div class="weather-legend-item"><span class="w-icon">☀️</span> <span>晴天 (無雨/舒適)</span></div>
+            <div class="weather-legend-item"><span class="w-icon">⛅</span> <span>晴時多雲 (局部多雲)</span></div>
+            <div class="weather-legend-item"><span class="w-icon">☁️</span> <span>多雲陰天 (陰天)</span></div>
+            <div class="weather-legend-item"><span class="w-icon">🌧️</span> <span>雨天 (降雨觀測)</span></div>
           </div>
 
           <div class="legend-list">
-            <div class="legend-item"><span class="color-box temp-lt15"></span> <span>&lt; 15°C (低溫寒冷)</span></div>
+            <div class="legend-item"><span class="color-box temp-lt15"></span> <span>&lt; 15°C (寒冷)</span></div>
             <div class="legend-item"><span class="color-box temp-15-20"></span> <span>15 ~ 20°C (涼爽)</span></div>
-            <div class="legend-item"><span class="color-box temp-20-25"></span> <span>20 ~ 25°C (舒適宜人)</span></div>
+            <div class="legend-item"><span class="color-box temp-20-25"></span> <span>20 ~ 25°C (舒適)</span></div>
             <div class="legend-item"><span class="color-box temp-25-30"></span> <span>25 ~ 30°C (溫暖)</span></div>
-            <div class="legend-item"><span class="color-box temp-30-35"></span> <span>30 ~ 35°C (炎熱高溫)</span></div>
-            <div class="legend-item"><span class="color-box temp-gte35"></span> <span>&ge; 35°C (酷熱警告)</span></div>
+            <div class="legend-item"><span class="color-box temp-30-35"></span> <span>30 ~ 35°C (炎熱)</span></div>
+            <div class="legend-item"><span class="color-box temp-gte35"></span> <span>&ge; 35°C (酷熱)</span></div>
           </div>
         </div>
       </aside>
@@ -222,12 +294,12 @@
 
         <!-- Floating Map Telemetry Overlay -->
         <div class="map-hud-overlay">
-          <div class="map-hud-pill">
+          <div class="map-hud-pill" id="map-active-badge">
             <span class="hud-pill-dot"></span>
-            <span>TAIWAN METEOROLOGICAL GRID // LIVE</span>
+            <span id="map-hud-status-text">GIS OVERVIEW // 22 COUNTIES</span>
           </div>
           <div class="map-zoom-controls">
-            <button id="btn-zoom-taiwan" title="重新聚焦台灣全島">全島視角 🇹🇼</button>
+            <button id="btn-zoom-taiwan" title="重新聚焦台灣全島總覽">全島總覽 🇹🇼</button>
           </div>
         </div>
       </section>
