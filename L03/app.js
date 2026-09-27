@@ -305,8 +305,8 @@ function initMap() {
   state.countyBadgesLayer = L.layerGroup().addTo(state.map);
   state.markersLayer = L.layerGroup().addTo(state.map);
 
-  // Load Taiwan Counties GeoJSON
-  fetch('taiwan-counties.json')
+  // Load Taiwan Counties GeoJSON with dynamic cache buster
+  fetch('taiwan-counties.json?v=' + Date.now())
     .then((res) => res.json())
     .then((geoJsonData) => {
       state.geoJsonLayer = L.geoJSON(geoJsonData, {
