@@ -385,31 +385,31 @@ function getCountyPolygonStyle(feature) {
       color: '#00ffff',
       weight: 3.5,
       opacity: 1,
-      fillColor: 'rgba(0, 212, 255, 0.28)',
-      fillOpacity: 0.5,
+      fillColor: 'rgba(0, 212, 255, 0.35)',
+      fillOpacity: 0.55,
       dashArray: '',
     };
   }
 
   if (isOverview) {
     return {
-      color: 'rgba(0, 212, 255, 0.55)',
-      weight: 1.5,
-      opacity: 0.9,
-      fillColor: 'rgba(0, 212, 255, 0.08)',
-      fillOpacity: 0.25,
-      dashArray: '3, 4',
+      color: 'rgba(0, 212, 255, 0.75)',
+      weight: 1.6,
+      opacity: 0.95,
+      fillColor: 'rgba(0, 212, 255, 0.12)',
+      fillOpacity: 0.3,
+      dashArray: '',
     };
   }
 
   // Another county when one county is actively focused
   return {
-    color: 'rgba(255, 255, 255, 0.15)',
+    color: 'rgba(255, 255, 255, 0.18)',
     weight: 1,
-    opacity: 0.4,
-    fillColor: 'rgba(0, 0, 0, 0.3)',
-    fillOpacity: 0.2,
-    dashArray: '2, 4',
+    opacity: 0.45,
+    fillColor: 'rgba(0, 0, 0, 0.35)',
+    fillOpacity: 0.25,
+    dashArray: '',
   };
 }
 
