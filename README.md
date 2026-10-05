@@ -12,7 +12,8 @@ This repository contains homework assignments, lab exercises, and projects for t
 | :--- | :--- | :--- |
 | **Main Portal** | STARK HUD Navigation Hub & Student Portfolio | [Visit Main Hub](https://aaronh945.github.io/AI_Security_HW/) |
 | **Lab 02 (L02)** | Lab 02 Interactive Interface & Telemetry | [Visit Lab 02](https://aaronh945.github.io/AI_Security_HW/L02/) |
-| **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
+| **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
+| **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)
@@ -31,11 +32,11 @@ AI_Security_HW/
 ├── vercel.json       # Vercel Deployment & Cron Configuration
 ├── README.md         # Main Project Overview & Documentation
 │
-├── api/              # Vercel Serverless Functions
+├── api/              # Vercel Serverless Functions (Node.js)
 │   ├── weather.js    # Weather query endpoint (PostgreSQL / CWA Fallback)
 │   └── sync.js       # CWA to PostgreSQL sync & Cron handler
 │
-├── lib/              # Backend Modules
+├── lib/              # Backend Modules (Node.js)
 │   ├── db.js         # PostgreSQL connection & Auto-schema
 │   └── cwa.js        # CWA Open Data fetcher & parser
 │
@@ -46,7 +47,7 @@ AI_Security_HW/
 │   ├── screenshot.png# Lab 02 Preview Screenshot
 │   └── README.md     # Lab 02 Overview
 │
-├── L03/              # Lab / Homework 03 (CWA Weather Station Map)
+├── L03/              # Lab / Homework 03 (JavaScript + Vercel Edition)
 │   ├── index.html    # Leaflet 台灣氣象站地圖
 │   ├── style.css     # HUD 樣式與溫度色階
 │   ├── app.js        # 地圖 Marker 渲染與遙測邏輯
@@ -54,6 +55,22 @@ AI_Security_HW/
 │   ├── screenshot.png# L03 預覽截圖
 │   ├── sql/schema.sql# PostgreSQL DDL
 │   └── README.md     # L03 文件與部署步驟
+│
+├── L03_1/            # Lab / Homework 03_1 (Python + Vercel Edition)
+│   ├── index.html    # Leaflet 台灣氣象站地圖主頁面
+│   ├── style.css     # 科幻 HUD 樣式
+│   ├── app.js        # 地圖互動與 Python API 串接
+│   ├── server.py     # 本地 Python 開發伺服器 (包含 API 與靜態資源)
+│   ├── requirements.txt # Python 依賴 (psycopg2-binary, requests)
+│   ├── vercel.json   # Vercel Python Runtime 與 Cron 配置
+│   ├── api/          # Vercel Python Serverless Functions
+│   │   ├── weather.py# /api/weather 氣象觀測資料端點
+│   │   └── sync.py   # /api/sync 定時同步至 PostgreSQL 端點
+│   ├── lib/          # Python 後端核心模組
+│   │   ├── cwa.py    # CWA API 介接與清洗
+│   │   └── db.py     # PostgreSQL 連線池與自動 Schema
+│   ├── sql/schema.sql# PostgreSQL DDL
+│   └── README.md     # L03_1 Python 詳細架構與部署文件
 │
 └── Final/            # Final Capstone Project
 ```
