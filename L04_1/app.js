@@ -890,10 +890,10 @@ const DATA = {
           "coefficients": {
             "R&D Spend": 0.8516
           },
-          "train_rmse": 9493.5806,
-          "train_r2": 0.944959,
-          "test_rmse": 8274.868,
-          "test_r2": 0.946459,
+          "train_rmse": 9493.580597976612,
+          "train_r2": 0.9449589778363044,
+          "test_rmse": 8274.86801822599,
+          "test_r2": 0.9464587607787219,
           "test_predictions": [
             {
               "index": 28,
@@ -968,10 +968,10 @@ const DATA = {
             "R&D Spend": 0.7886,
             "Marketing Spend": 0.0326
           },
-          "train_rmse": 9078.6179,
-          "train_r2": 0.949665,
-          "test_rmse": 8198.7972,
-          "test_r2": 0.947439,
+          "train_rmse": 9078.61791848669,
+          "train_r2": 0.9496654854268443,
+          "test_rmse": 8198.797190788488,
+          "test_r2": 0.9474386447268488,
           "test_predictions": [
             {
               "index": 28,
@@ -1048,10 +1048,10 @@ const DATA = {
             "Marketing Spend": 0.0333,
             "State_New York": 864.0019
           },
-          "train_rmse": 9069.6848,
-          "train_r2": 0.949764,
-          "test_rmse": 8309.0597,
-          "test_r2": 0.946015,
+          "train_rmse": 9069.684820873443,
+          "train_r2": 0.9497644921078413,
+          "test_rmse": 8309.05968348172,
+          "test_r2": 0.9460153830071389,
           "test_predictions": [
             {
               "index": 28,
@@ -1120,8 +1120,8 @@ const DATA = {
           "features": [
             "R&D Spend",
             "Marketing Spend",
-            "State_Florida",
-            "State_New York"
+            "State_New York",
+            "State_Florida"
           ],
           "intercept": 46329.0602,
           "coefficients": {
@@ -1130,10 +1130,10 @@ const DATA = {
             "State_Florida": -826.4682,
             "State_New York": 554.6573
           },
-          "train_rmse": 9064.1182,
-          "train_r2": 0.949826,
-          "test_rmse": 8409.9167,
-          "test_r2": 0.944697,
+          "train_rmse": 9064.118245163727,
+          "train_r2": 0.9498261378977877,
+          "test_rmse": 8409.916714488054,
+          "test_r2": 0.9446968769428332,
           "test_predictions": [
             {
               "index": 28,
@@ -1202,9 +1202,9 @@ const DATA = {
           "features": [
             "R&D Spend",
             "Marketing Spend",
-            "State_California",
+            "State_New York",
             "State_Florida",
-            "State_New York"
+            "State_California"
           ],
           "intercept": 46238.4566,
           "coefficients": {
@@ -1214,10 +1214,10 @@ const DATA = {
             "State_Florida": -735.8646,
             "State_New York": 645.2609
           },
-          "train_rmse": 9064.1182,
-          "train_r2": 0.949826,
-          "test_rmse": 8409.9167,
-          "test_r2": 0.944697,
+          "train_rmse": 9031.666612578969,
+          "train_r2": 0.9501847627493607,
+          "test_rmse": 9137.99015279461,
+          "test_r2": 0.9347068473282473,
           "test_predictions": [
             {
               "index": 28,
@@ -2868,65 +2868,65 @@ const DATA = {
 
 // Application State
 const state = {
-  method: 'Forward',
-  k: 2,
-  compMode: 'rmse',
+  method: 'Backward', // Defaults to Backward selection matching notebook reference
+  k: 2,               // Defaults to optimal k=2
+  compMode: 'rmse',   // 'rmse' | 'r2' | 'dual'
   theme: 'cyan',
-  rawOpen: false,
   charts: {
+    rmseByK: null,
+    r2ByK: null,
     coef: null,
     pred: null,
     comp: null
   }
 };
 
-// Method Colors Mapping
+// Method Theme Colors
 const METHOD_COLORS = {
-  Forward: '#00f2fe',
-  Backward: '#38ef7d',
-  RFE: '#c084fc',
-  Lasso: '#ffd700',
-  Correlation: '#ff5252'
+  Backward: '#38ef7d',    // Emerald
+  Forward: '#00f2fe',     // Cyan
+  RFE: '#ffd700',         // Gold
+  Lasso: '#ff7675',       // Coral
+  Correlation: '#a29bfe'  // Lavender
 };
 
 // DOM Elements
 const elements = {
-  algoCardsContainer: document.getElementById('algo-cards-container'),
-  methodPillsContainer: document.getElementById('method-pills-container'),
+  methodPills: document.getElementById('method-pills-container'),
+  activeMethodTag: document.getElementById('active-method-tag'),
   kSlider: document.getElementById('k-slider'),
   kBadge: document.getElementById('k-display-badge'),
   kPills: document.getElementById('k-pills-container'),
   btnQuickBest: document.getElementById('btn-quick-best'),
-  activeMethodTag: document.getElementById('active-method-tag'),
-  currentAlgoBullet: document.getElementById('current-algo-bullet'),
+  algoBullet: document.getElementById('current-algo-bullet'),
   currentAlgoTitle: document.getElementById('current-algo-title'),
   currentAlgoSubtitle: document.getElementById('current-algo-subtitle'),
-  currentKSummaryText: document.getElementById('current-k-summary-text'),
-  featuresChipsContainer: document.getElementById('features-chips-container'),
+  currentKSummary: document.getElementById('current-k-summary-text'),
+  chipsContainer: document.getElementById('features-chips-container'),
+  progressionTableBody: document.getElementById('progression-table-body'),
+  progressionTableTitle: document.getElementById('progression-table-title'),
+  titleRmseChart: document.getElementById('title-rmse-chart'),
+  titleR2Chart: document.getElementById('title-r2-chart'),
+  cardTestRmse: document.getElementById('card-test-rmse'),
+  cardTestR2: document.getElementById('card-test-r2'),
   valTestRmse: document.getElementById('val-test-rmse'),
   valTestR2: document.getElementById('val-test-r2'),
   valTrainRmse: document.getElementById('val-train-rmse'),
   valTrainR2: document.getElementById('val-train-r2'),
-  cardTestRmse: document.getElementById('card-test-rmse'),
-  cardTestR2: document.getElementById('card-test-r2'),
   formulaDisplay: document.getElementById('formula-display'),
   testPredictionsTable: document.querySelector('#test-predictions-table tbody'),
-  comparisonMatrixTable: document.querySelector('#full-comparison-matrix-table tbody'),
-  rawDatasetTable: document.querySelector('#raw-dataset-table tbody'),
-  rawPanel: document.getElementById('raw-data-panel'),
-  btnToggleRaw: document.getElementById('btn-toggle-raw-data'),
-  compHeader: document.getElementById('comparison-chart-header'),
-  compTabBtns: document.querySelectorAll('.chart-tab-btn'),
-  themeBtns: document.querySelectorAll('.theme-btn')
+  compHeader: document.getElementById('comp-chart-header'),
+  compTabs: document.querySelectorAll('.chart-tab-btn'),
+  comparisonMatrixTable: document.querySelector('#comparison-matrix-table tbody'),
+  rawDatasetTable: document.querySelector('#raw-dataset-table tbody')
 };
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
-  renderAlgoCards();
   renderMethodPills();
-  bindControls();
-  renderCurrentModel();
+  initEventListeners();
+  updateUI();
   renderComparisonSection();
   renderRawDataTable();
 });
@@ -2936,9 +2936,9 @@ function initTheme() {
   const savedTheme = localStorage.getItem('hud_theme') || 'cyan';
   setTheme(savedTheme);
 
-  elements.themeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const theme = btn.getAttribute('data-theme');
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const theme = e.currentTarget.getAttribute('data-theme');
       setTheme(theme);
     });
   });
@@ -2949,184 +2949,350 @@ function setTheme(theme) {
   document.body.setAttribute('data-theme', theme);
   localStorage.setItem('hud_theme', theme);
 
-  elements.themeBtns.forEach(btn => {
-    if (btn.getAttribute('data-theme') === theme) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
   });
 
-  // Refresh charts colors
+  // Re-render charts with updated theme if needed
+  if (state.charts.rmseByK) renderSubplots();
   if (state.charts.coef) renderCoefChart();
   if (state.charts.pred) renderPredChart();
   if (state.charts.comp) renderCompChart();
 }
 
-// Render Algorithm Educational Cards
-function renderAlgoCards() {
-  const methods = Object.keys(DATA.methods);
-  const typeMap = {
-    'Wrapper Method': 'type-wrapper',
-    'Wrapper / Hybrid': 'type-wrapper',
-    'Embedded Method': 'type-embedded',
-    'Filter Method': 'type-filter'
-  };
-
-  elements.algoCardsContainer.innerHTML = methods.map((mKey, idx) => {
-    const m = DATA.methods[mKey].info;
-    const color = METHOD_COLORS[mKey] || '#00f2fe';
-    const typeClass = typeMap[m.type] || 'type-wrapper';
-    const isActive = state.method === mKey ? 'active' : '';
-
-    return `
-      <div class="algo-card ${isActive}" data-method="${mKey}" style="--card-color: ${color}; --card-glow: ${color}66;">
-        <div class="algo-card-header">
-          <span class="algo-rank">#0${idx + 1}</span>
-          <span class="type-badge ${typeClass}">${m.type}</span>
-        </div>
-        <div class="algo-name-zh">${m.chinese_name}</div>
-        <div class="algo-name-en">${m.name}</div>
-        <div class="algo-desc">${m.desc}</div>
-        <div class="algo-meta">
-          <span>複雜度: ${m.complexity}</span>
-          <span style="color: ${color};">點擊切換 ➔</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  elements.algoCardsContainer.querySelectorAll('.algo-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const selected = card.getAttribute('data-method');
-      setMethod(selected);
-    });
-  });
-}
-
-// Render Method Pill Buttons
+// Render Method Pills
 function renderMethodPills() {
   const methods = Object.keys(DATA.methods);
-  elements.methodPillsContainer.innerHTML = methods.map(mKey => {
-    const m = DATA.methods[mKey].info;
-    const isActive = state.method === mKey ? 'active' : '';
-    const color = METHOD_COLORS[mKey];
+  elements.methodPills.innerHTML = methods.map(key => {
+    const info = DATA.methods[key].info;
+    const isActive = key === state.method;
+    const color = METHOD_COLORS[key] || '#00d4ff';
     return `
-      <button class="method-pill-btn ${isActive}" data-method="${mKey}" style="--pill-color: ${color}">
-        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color};"></span>
-        ${m.chinese_name}
+      <button class="method-pill ${isActive ? 'active' : ''}" data-method="${key}" style="--pill-color:${color};">
+        <span class="pill-dot"></span>
+        <span class="pill-name">${info.chinese_name}</span>
+        <span class="pill-sub">(${key})</span>
       </button>
     `;
   }).join('');
 
-  elements.methodPillsContainer.querySelectorAll('.method-pill-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const selected = btn.getAttribute('data-method');
-      setMethod(selected);
+  elements.methodPills.querySelectorAll('.method-pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const method = e.currentTarget.getAttribute('data-method');
+      setMethod(method);
     });
   });
 }
 
-// Bind Controls
-function bindControls() {
-  // K Slider
-  elements.kSlider.addEventListener('input', (e) => {
-    setK(parseInt(e.target.value));
+function setMethod(method) {
+  if (state.method === method) return;
+  state.method = method;
+
+  elements.methodPills.querySelectorAll('.method-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-method') === method);
   });
 
-  // K Pills
-  elements.kPills.querySelectorAll('.k-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      setK(parseInt(pill.getAttribute('data-k')));
+  const info = DATA.methods[method].info;
+  elements.activeMethodTag.textContent = `${info.chinese_name.toUpperCase()} (${method.toUpperCase()})`;
+  elements.algoBullet.style.background = METHOD_COLORS[method];
+  elements.algoBullet.style.boxShadow = `0 0 10px ${METHOD_COLORS[method]}`;
+
+  updateUI();
+}
+
+function setFeatureCount(k) {
+  k = parseInt(k, 10);
+  if (state.k === k) return;
+  state.k = k;
+  elements.kSlider.value = k;
+  elements.kBadge.textContent = k;
+
+  elements.kPills.querySelectorAll('.k-pill').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.getAttribute('data-k'), 10) === k);
+  });
+
+  updateUI();
+}
+
+// Event Listeners
+function initEventListeners() {
+  elements.kSlider.addEventListener('input', (e) => {
+    setFeatureCount(e.target.value);
+  });
+
+  elements.kPills.querySelectorAll('.k-pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const k = e.currentTarget.getAttribute('data-k');
+      setFeatureCount(k);
     });
   });
 
-  // Quick Best Button
-  elements.btnQuickBest.addEventListener('click', () => {
-    setK(2);
-  });
+  if (elements.btnQuickBest) {
+    elements.btnQuickBest.addEventListener('click', () => {
+      setFeatureCount(2);
+    });
+  }
 
-  // Raw Data Toggle
-  elements.btnToggleRaw.addEventListener('click', () => {
-    state.rawOpen = !state.rawOpen;
-    elements.rawPanel.style.display = state.rawOpen ? 'block' : 'none';
-    elements.btnToggleRaw.innerHTML = state.rawOpen ? '<span>收合原始資料</span> ▲' : '<span>展開原始資料 (50 筆)</span> ▼';
-  });
-
-  // Comparison Tabs
-  elements.compTabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      elements.compTabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.compMode = btn.getAttribute('data-comp-mode');
+  // Cross comparison tabs
+  elements.compTabs.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      elements.compTabs.forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      state.compMode = e.currentTarget.getAttribute('data-comp-mode');
       renderCompChart();
     });
   });
 }
 
-// Set Current Method
-function setMethod(methodKey) {
-  if (!DATA.methods[methodKey]) return;
-  state.method = methodKey;
+// Master UI Update
+function updateUI() {
+  const methodData = DATA.methods[state.method];
+  const step = methodData.steps.find(s => s.k === state.k) || methodData.steps[1];
 
-  // Update pills and cards active class
-  elements.algoCardsContainer.querySelectorAll('.algo-card').forEach(c => {
-    c.classList.toggle('active', c.getAttribute('data-method') === methodKey);
-  });
-  elements.methodPillsContainer.querySelectorAll('.method-pill-btn').forEach(b => {
-    b.classList.toggle('active', b.getAttribute('data-method') === methodKey);
-  });
-
-  renderCurrentModel();
-}
-
-// Set Current K
-function setK(k) {
-  if (k < 1 || k > 6) return;
-  state.k = k;
-  elements.kSlider.value = k;
-  elements.kBadge.textContent = k;
-
-  elements.kPills.querySelectorAll('.k-pill').forEach(pill => {
-    pill.classList.toggle('active', parseInt(pill.getAttribute('data-k')) === k);
-  });
-
-  renderCurrentModel();
-}
-
-// Render Current Model Details
-function renderCurrentModel() {
-  const methodObj = DATA.methods[state.method];
-  const step = methodObj.steps.find(s => s.k === state.k);
-  if (!step) return;
-
-  const color = METHOD_COLORS[state.method];
-
-  // Update headers
-  elements.activeMethodTag.textContent = methodObj.info.name;
-  elements.activeMethodTag.style.color = color;
-  elements.currentAlgoBullet.style.background = color;
-  elements.currentAlgoBullet.style.boxShadow = `0 0 10px ${color}`;
-  elements.currentAlgoTitle.textContent = `${methodObj.info.chinese_name} (${methodObj.info.name})`;
-  elements.currentAlgoTitle.style.color = color;
-  elements.currentAlgoSubtitle.textContent = `特徵數 k = ${state.k}`;
-  elements.currentKSummaryText.textContent = `已選取 ${step.features.length} / ${DATA.dataset.features.length} 個特徵欄位`;
+  // Update Summary Header
+  elements.currentAlgoTitle.textContent = `${methodData.info.name} (${methodData.info.chinese_name})`;
+  elements.currentAlgoTitle.style.color = METHOD_COLORS[state.method];
+  elements.currentAlgoSubtitle.textContent = `[${methodData.info.type}] · ${methodData.info.complexity}`;
+  elements.currentKSummary.textContent = `當前選取特徵數: ${step.k} / ${DATA.dataset.features.length} 欄位`;
 
   // Render Feature Chips
+  renderChips(step.features);
+
+  // Render Notebook Subplots (RMSE & R-squared by Number of Features)
+  renderSubplots();
+
+  // Render Progression Table (Matches Notebook Table)
+  renderProgressionTable();
+
+  // Render Telemetry & Cards
+  renderTelemetry(step);
+
+  // Render Coefficients & Residuals
+  renderCoefChart();
+  renderPredChart();
+}
+
+// Render Feature Chips
+function renderChips(selectedFeatures) {
   const allFeatures = DATA.dataset.features;
-  elements.featuresChipsContainer.innerHTML = allFeatures.map(f => {
-    const isSelected = step.features.includes(f);
-    const coefVal = isSelected ? step.coefficients[f] : null;
+  elements.chipsContainer.innerHTML = allFeatures.map(feat => {
+    const isSel = selectedFeatures.includes(feat);
     return `
-      <div class="feature-chip ${isSelected ? 'selected' : 'unselected'}" style="${isSelected ? `--primary: ${color}; --primary-glow: ${color}44;` : ''}">
-        <span>${isSelected ? '✓' : '—'}</span>
-        <span>${f}</span>
-        ${isSelected ? `<span style="font-size:0.7rem; opacity:0.85;">(β=${coefVal >= 0 ? '+' : ''}${coefVal})</span>` : ''}
+      <div class="feature-chip ${isSel ? 'selected' : 'unselected'}">
+        <span class="chip-status">${isSel ? '✔' : '○'}</span>
+        <span class="chip-label">${feat}</span>
       </div>
     `;
   }).join('');
+}
 
-  // Update Metrics
+// ==========================================================================
+// 1. Dual Subplots (Exact match to notebook Image 2)
+// ==========================================================================
+function renderSubplots() {
+  const canvasRmse = document.getElementById('chart-rmse-by-features');
+  const canvasR2 = document.getElementById('chart-r2-by-features');
+  if (!canvasRmse || !canvasR2) return;
+
+  const ctxRmse = canvasRmse.getContext('2d');
+  const ctxR2 = canvasR2.getContext('2d');
+
+  const steps = DATA.methods[state.method].steps;
+  const kLabels = steps.map(s => s.k);
+  const color = METHOD_COLORS[state.method] || '#00d4ff';
+
+  // Subplot 1: RMSE by Number of Features
+  if (state.charts.rmseByK) {
+    state.charts.rmseByK.destroy();
+  }
+
+  const rmseData = steps.map(s => s.test_rmse);
+  const pointRadiiRmse = steps.map(s => (s.k === state.k ? 9 : 5));
+  const pointColorsRmse = steps.map(s => (s.k === state.k ? '#ffd700' : color));
+
+  state.charts.rmseByK = new Chart(ctxRmse, {
+    type: 'line',
+    data: {
+      labels: kLabels,
+      datasets: [{
+        label: 'RMSE',
+        data: rmseData,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2.2,
+        pointRadius: pointRadiiRmse,
+        pointHoverRadius: 10,
+        pointBackgroundColor: pointColorsRmse,
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: steps.map(s => (s.k === state.k ? 2 : 1)),
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'RMSE by Number of Features',
+          color: '#ffffff',
+          font: { family: 'Outfit', size: 14, weight: '600' },
+          padding: { bottom: 12 }
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => `Number of Features: ${items[0].label}`,
+            label: (ctx) => `RMSE: ${ctx.raw.toFixed(6)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Number of Features',
+            color: '#8fa5c4',
+            font: { family: 'Outfit', size: 12, weight: '500' }
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#8fa5c4', font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'RMSE',
+            color: '#8fa5c4',
+            font: { family: 'Outfit', size: 12, weight: '500' }
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.08)' },
+          ticks: {
+            color: '#8fa5c4',
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: (v) => v.toFixed(0)
+          }
+        }
+      }
+    }
+  });
+
+  // Subplot 2: R-squared by Number of Features
+  if (state.charts.r2ByK) {
+    state.charts.r2ByK.destroy();
+  }
+
+  const r2Data = steps.map(s => s.test_r2);
+  const pointRadiiR2 = steps.map(s => (s.k === state.k ? 9 : 5));
+  const pointColorsR2 = steps.map(s => (s.k === state.k ? '#ffd700' : color));
+
+  state.charts.r2ByK = new Chart(ctxR2, {
+    type: 'line',
+    data: {
+      labels: kLabels,
+      datasets: [{
+        label: 'R-squared',
+        data: r2Data,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2.2,
+        pointRadius: pointRadiiR2,
+        pointHoverRadius: 10,
+        pointBackgroundColor: pointColorsR2,
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: steps.map(s => (s.k === state.k ? 2 : 1)),
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'R-squared by Number of Features',
+          color: '#ffffff',
+          font: { family: 'Outfit', size: 14, weight: '600' },
+          padding: { bottom: 12 }
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => `Number of Features: ${items[0].label}`,
+            label: (ctx) => `R-squared: ${ctx.raw.toFixed(6)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Number of Features',
+            color: '#8fa5c4',
+            font: { family: 'Outfit', size: 12, weight: '500' }
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#8fa5c4', font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'R-squared',
+            color: '#8fa5c4',
+            font: { family: 'Outfit', size: 12, weight: '500' }
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.08)' },
+          ticks: {
+            color: '#8fa5c4',
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: (v) => v.toFixed(3)
+          }
+        }
+      }
+    }
+  });
+}
+
+// ==========================================================================
+// 2. Progression Table (Exact match to notebook Image 1)
+// ==========================================================================
+function renderProgressionTable() {
+  const steps = DATA.methods[state.method].steps;
+  elements.progressionTableTitle.textContent = `${DATA.methods[state.method].info.chinese_name} · 特徵篩選步階評估表`;
+
+  elements.progressionTableBody.innerHTML = steps.map(s => {
+    const isActive = s.k === state.k;
+    const isOptimal = s.k === 2;
+    const featsStr = '[' + s.features.join(', ') + ']';
+
+    return `
+      <tr class="${isActive ? 'active-k-row' : ''} ${isOptimal ? 'optimal-row' : ''}" data-k="${s.k}">
+        <td>
+          <strong>${s.k}</strong>
+          ${isActive ? '<span style="color:var(--primary); font-size:0.75rem; margin-left:6px;">◄ 當前選取</span>' : ''}
+          ${isOptimal ? '<span style="color:var(--accent); font-size:0.75rem; margin-left:6px;">⭐ (最佳)</span>' : ''}
+        </td>
+        <td><code style="color:var(--text-main); font-family:var(--font-mono); font-size:0.82rem;">${featsStr}</code></td>
+        <td class="num-cell" style="color:${isActive ? 'var(--primary)' : 'var(--text-main)'}; font-weight:${isActive ? '700' : '400'};">
+          ${s.test_rmse.toFixed(6)}
+        </td>
+        <td class="num-cell" style="color:${isActive ? 'var(--primary)' : 'var(--text-main)'}; font-weight:${isActive ? '700' : '400'};">
+          ${s.test_r2.toFixed(6)}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Row click listeners to switch k
+  elements.progressionTableBody.querySelectorAll('tr').forEach(row => {
+    row.addEventListener('click', (e) => {
+      const k = e.currentTarget.getAttribute('data-k');
+      setFeatureCount(k);
+    });
+  });
+}
+
+// Telemetry & Cards Update
+function renderTelemetry(step) {
   elements.valTestRmse.textContent = step.test_rmse.toFixed(2);
   elements.valTestR2.textContent = (step.test_r2 * 100).toFixed(2) + '%';
   elements.valTrainRmse.textContent = step.train_rmse.toFixed(2);
@@ -3166,13 +3332,9 @@ function renderCurrentModel() {
       </tr>
     `;
   }).join('');
-
-  // Re-render Live Charts
-  renderCoefChart();
-  renderPredChart();
 }
 
-// Chart 1: Feature Weights
+// Chart: Feature Weights (Coefficients)
 function renderCoefChart() {
   const canvas = document.getElementById('chart-coefs');
   if (!canvas) return;
@@ -3225,7 +3387,7 @@ function renderCoefChart() {
   });
 }
 
-// Chart 2: Test Set Actual vs Predicted
+// Chart: Test Set Actual vs Predicted
 function renderPredChart() {
   const canvas = document.getElementById('chart-predictions');
   if (!canvas) return;
@@ -3299,7 +3461,9 @@ function renderPredChart() {
   });
 }
 
-// Chart 3 & Table: Cross Comparison across all 5 methods
+// ==========================================================================
+// 3. Cross Comparison across all 5 methods
+// ==========================================================================
 function renderComparisonSection() {
   renderCompChart();
   renderCompTable();
@@ -3503,8 +3667,8 @@ function renderCompTable() {
     const corr = DATA.methods.Correlation.steps[k - 1];
 
     const rmses = [
-      { m: 'Forward', v: fwd.test_rmse, r2: fwd.test_r2 },
       { m: 'Backward', v: bwd.test_rmse, r2: bwd.test_r2 },
+      { m: 'Forward', v: fwd.test_rmse, r2: fwd.test_r2 },
       { m: 'RFE', v: rfe.test_rmse, r2: rfe.test_r2 },
       { m: 'Lasso', v: lasso.test_rmse, r2: lasso.test_r2 },
       { m: 'Correlation', v: corr.test_rmse, r2: corr.test_r2 }
@@ -3518,8 +3682,8 @@ function renderCompTable() {
     return `
       <tr class="${isGlobalBest ? 'highlight-row' : ''}">
         <td><strong>k = ${k}</strong> ${isGlobalBest ? '⭐ (最佳)' : ''}</td>
-        <td>${fwd.test_rmse.toFixed(2)} / ${(fwd.test_r2 * 100).toFixed(2)}%</td>
         <td>${bwd.test_rmse.toFixed(2)} / ${(bwd.test_r2 * 100).toFixed(2)}%</td>
+        <td>${fwd.test_rmse.toFixed(2)} / ${(fwd.test_r2 * 100).toFixed(2)}%</td>
         <td>${rfe.test_rmse.toFixed(2)} / ${(rfe.test_r2 * 100).toFixed(2)}%</td>
         <td>${lasso.test_rmse.toFixed(2)} / ${(lasso.test_r2 * 100).toFixed(2)}%</td>
         <td>${corr.test_rmse.toFixed(2)} / ${(corr.test_r2 * 100).toFixed(2)}%</td>

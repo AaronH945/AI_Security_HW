@@ -163,6 +163,57 @@
         <!-- Rendered by JS -->
       </div>
 
+      <!-- Dual Performance Curves (Exact match to notebook reference plots: RMSE & R-squared by Number of Features) -->
+      <div class="charts-grid-2col" style="margin-bottom: 24px;">
+        <!-- Subplot 1: RMSE by Number of Features -->
+        <div class="chart-card">
+          <div class="chart-card-title">
+            <span id="title-rmse-chart">📉 RMSE by Number of Features</span>
+            <span class="chart-badge">Line Plot (Lower is Better)</span>
+          </div>
+          <div class="chart-canvas-wrapper" style="height: 310px;">
+            <canvas id="chart-rmse-by-features"></canvas>
+          </div>
+        </div>
+
+        <!-- Subplot 2: R-squared by Number of Features -->
+        <div class="chart-card">
+          <div class="chart-card-title">
+            <span id="title-r2-chart">📈 R-squared by Number of Features</span>
+            <span class="chart-badge">Line Plot (Higher is Better)</span>
+          </div>
+          <div class="chart-canvas-wrapper" style="height: 310px;">
+            <canvas id="chart-r2-by-features"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Selection Progression Table (Exact match to notebook reference table) -->
+      <div class="progression-table-card" style="margin-bottom: 24px;">
+        <div class="table-card-header">
+          <div class="table-card-title">
+            <span class="icon">📋</span>
+            <span id="progression-table-title">特徵篩選步階評估表 (EVALUATION METRICS TABLE)</span>
+          </div>
+          <span class="table-card-hint">💡 點擊表格任一列可快速切換特徵數 k</span>
+        </div>
+        <div class="hud-table-wrapper">
+          <table class="hud-table progression-table" id="feature-progression-table">
+            <thead>
+              <tr>
+                <th style="width: 18%;">Number of Features</th>
+                <th style="width: 52%;">Selected Features</th>
+                <th style="width: 15%; text-align: right;">RMSE</th>
+                <th style="width: 15%; text-align: right;">R-squared</th>
+              </tr>
+            </thead>
+            <tbody id="progression-table-body">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Real-time Model Metrics Cards Grid -->
       <div class="metrics-grid">
         <div class="metric-card" id="card-test-rmse">

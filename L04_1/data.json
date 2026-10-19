@@ -884,10 +884,10 @@
           "coefficients": {
             "R&D Spend": 0.8516
           },
-          "train_rmse": 9493.5806,
-          "train_r2": 0.944959,
-          "test_rmse": 8274.868,
-          "test_r2": 0.946459,
+          "train_rmse": 9493.580597976612,
+          "train_r2": 0.9449589778363044,
+          "test_rmse": 8274.86801822599,
+          "test_r2": 0.9464587607787219,
           "test_predictions": [
             {
               "index": 28,
@@ -962,10 +962,10 @@
             "R&D Spend": 0.7886,
             "Marketing Spend": 0.0326
           },
-          "train_rmse": 9078.6179,
-          "train_r2": 0.949665,
-          "test_rmse": 8198.7972,
-          "test_r2": 0.947439,
+          "train_rmse": 9078.61791848669,
+          "train_r2": 0.9496654854268443,
+          "test_rmse": 8198.797190788488,
+          "test_r2": 0.9474386447268488,
           "test_predictions": [
             {
               "index": 28,
@@ -1042,10 +1042,10 @@
             "Marketing Spend": 0.0333,
             "State_New York": 864.0019
           },
-          "train_rmse": 9069.6848,
-          "train_r2": 0.949764,
-          "test_rmse": 8309.0597,
-          "test_r2": 0.946015,
+          "train_rmse": 9069.684820873443,
+          "train_r2": 0.9497644921078413,
+          "test_rmse": 8309.05968348172,
+          "test_r2": 0.9460153830071389,
           "test_predictions": [
             {
               "index": 28,
@@ -1114,8 +1114,8 @@
           "features": [
             "R&D Spend",
             "Marketing Spend",
-            "State_Florida",
-            "State_New York"
+            "State_New York",
+            "State_Florida"
           ],
           "intercept": 46329.0602,
           "coefficients": {
@@ -1124,10 +1124,10 @@
             "State_Florida": -826.4682,
             "State_New York": 554.6573
           },
-          "train_rmse": 9064.1182,
-          "train_r2": 0.949826,
-          "test_rmse": 8409.9167,
-          "test_r2": 0.944697,
+          "train_rmse": 9064.118245163727,
+          "train_r2": 0.9498261378977877,
+          "test_rmse": 8409.916714488054,
+          "test_r2": 0.9446968769428332,
           "test_predictions": [
             {
               "index": 28,
@@ -1196,9 +1196,9 @@
           "features": [
             "R&D Spend",
             "Marketing Spend",
-            "State_California",
+            "State_New York",
             "State_Florida",
-            "State_New York"
+            "State_California"
           ],
           "intercept": 46238.4566,
           "coefficients": {
@@ -1208,10 +1208,10 @@
             "State_Florida": -735.8646,
             "State_New York": 645.2609
           },
-          "train_rmse": 9064.1182,
-          "train_r2": 0.949826,
-          "test_rmse": 8409.9167,
-          "test_r2": 0.944697,
+          "train_rmse": 9031.666612578969,
+          "train_r2": 0.9501847627493607,
+          "test_rmse": 9137.99015279461,
+          "test_r2": 0.9347068473282473,
           "test_predictions": [
             {
               "index": 28,
