@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 5 Feature Selection Lab // 50 Startups Interactive HUD</title>
+  <meta name="description" content="互動式機器學習特徵選擇演算法分析與評估系統 - 涵蓋 SFS、SBS、RFE、Lasso、Correlation 五大主流方法與 50 Startups 資料集實戰比較。">
+
+  <!-- Google Fonts: Orbitron, Outfit, JetBrains Mono, Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@600;800;900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="hud-app-wrapper">
+
+    <!-- Top Navigation Header -->
+    <header class="hud-header">
+      <div class="hud-brand">
+        <div class="arc-logo">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>FEATURE SELECTION // HUD LAB</h1>
+          <div class="subtext">AI SECURITY LAB 04_1 // 50 STARTUPS INTERACTIVE SUITE</div>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <!-- Theme Controls -->
+        <div class="theme-pill-group">
+          <button class="theme-btn active" data-theme="cyan" title="方舟反應爐藍">CYAN</button>
+          <button class="theme-btn" data-theme="mark" title="鋼鐵人紅金戰甲">MARK</button>
+          <button class="theme-btn" data-theme="emerald" title="量子翡翠綠">EMERALD</button>
+          <button class="theme-btn" data-theme="purple" title="粒子能量紫">PURPLE</button>
+        </div>
+
+        <!-- Navigation Portals -->
+        <a href="../" class="action-link" title="返回首頁主目錄">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          PORTAL
+        </a>
+        <a href="../L04/50Startups.ipynb" class="action-link" title="檢視 L04 50Startups Notebook">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          L04 IPYNB
+        </a>
+      </div>
+    </header>
+
+    <!-- Telemetry Status Bar -->
+    <div class="telemetry-bar">
+      <div class="telemetry-item">
+        <span class="label">DATASET</span>
+        <span class="val">50 STARTUPS</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="label">SPLIT CONFIG</span>
+        <span class="val">TRAIN 40 / TEST 10</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="label">OPTIMAL FEATURE K</span>
+        <span class="val" style="color: var(--accent);">k = 2 (TOP ACCURACY)</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="label">MAX TEST R²</span>
+        <span class="val" style="color: var(--accent);">0.9474 (94.7%)</span>
+      </div>
+    </div>
+
+    <!-- Section 1: Top 5 Feature Selection Algorithms Overview -->
+    <section class="hud-section" id="algo-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon">⚡</span>
+          <span>TOP 5 FEATURE SELECTION ALGORITHMS</span>
+        </div>
+        <span class="section-tag">METHODS DIRECTORY // 點選卡片立即切換</span>
+      </div>
+
+      <div class="algo-cards-grid" id="algo-cards-container">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- Section 2: Interactive Model Simulator -->
+    <section class="hud-section" id="simulator-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon">🎛️</span>
+          <span>INTERACTIVE MODEL SIMULATOR // 互動調控控制台</span>
+        </div>
+        <span class="section-tag">DYNAMIC PREDICTION & METRICS</span>
+      </div>
+
+      <!-- Controls Layout -->
+      <div class="controls-layout" style="margin-bottom: 24px;">
+        <!-- Control 1: Method Selector -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>SELECT ALGORITHM (演算法切換)</span>
+            <span id="active-method-tag" style="color: var(--primary);">FORWARD (SFS)</span>
+          </div>
+          <div class="method-pills" id="method-pills-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Control 2: Feature Count K Slider -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>SELECT NUMBER OF FEATURES (特徵數量 k)</span>
+            <span>RANGE: 1 ~ 6</span>
+          </div>
+          <div class="k-stepper-wrap">
+            <div class="slider-container">
+              <input type="range" min="1" max="6" value="2" class="k-slider" id="k-slider">
+              <div class="k-value-badge" id="k-display-badge">2</div>
+            </div>
+            <div class="k-pills-row" id="k-pills-container">
+              <button class="k-pill" data-k="1">k=1</button>
+              <button class="k-pill active" data-k="2">k=2</button>
+              <button class="k-pill" data-k="3">k=3</button>
+              <button class="k-pill" data-k="4">k=4</button>
+              <button class="k-pill" data-k="5">k=5</button>
+              <button class="k-pill" data-k="6">k=6</button>
+            </div>
+            <button class="quick-best-btn" id="btn-quick-best">⭐ 快速前往最佳模型 (Optimal k=2)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Selected Features Chips Display -->
+      <div class="state-summary-banner">
+        <div class="current-algo-display">
+          <div class="algo-bullet" id="current-algo-bullet"></div>
+          <div>
+            <strong id="current-algo-title" style="font-family: var(--font-hud); font-size: 1rem; color: var(--primary);">SFS (前向選擇)</strong>
+            <span id="current-algo-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">選中特徵列表</span>
+          </div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);" id="current-k-summary-text">
+          已選取 2 / 6 個特徵欄位
+        </div>
+      </div>
+
+      <div class="features-chip-container" id="features-chips-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Real-time Model Metrics Cards Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card" id="card-test-rmse">
+          <div class="metric-header">
+            <span>TEST RMSE</span>
+            <span>越低越好</span>
+          </div>
+          <div class="metric-value" id="val-test-rmse">8198.80</div>
+          <div class="metric-hint">均方根誤差 ($)</div>
+        </div>
+
+        <div class="metric-card" id="card-test-r2">
+          <div class="metric-header">
+            <span>TEST R-SQUARED</span>
+            <span>越高越好</span>
+          </div>
+          <div class="metric-value" id="val-test-r2">0.9474</div>
+          <div class="metric-hint">模型解釋力 ($R^2$)</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>TRAIN RMSE</span>
+            <span>訓練集基準</span>
+          </div>
+          <div class="metric-value" id="val-train-rmse">9031.67</div>
+          <div class="metric-hint">In-sample Loss</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>TRAIN R²</span>
+            <span>訓練集擬合</span>
+          </div>
+          <div class="metric-value" id="val-train-r2">0.9500</div>
+          <div class="metric-hint">Train Explanation</div>
+        </div>
+      </div>
+
+      <!-- Regression Equation Output Box -->
+      <div class="formula-box" id="formula-display">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Two Live Visualizations for current state -->
+      <div class="charts-grid-2col">
+        <!-- Chart 1: Feature Weights / Coefficients Bar Chart -->
+        <div class="chart-card">
+          <div class="chart-card-title">
+            <span>📊 MODEL COEFFICIENTS (係數權重)</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">β WEIGHTS</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-coefs"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Test Set Actual vs Predicted Scatter/Line Chart -->
+        <div class="chart-card">
+          <div class="chart-card-title">
+            <span>🎯 ACTUAL VS PREDICTED (測試集預測評估)</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">N = 10 TEST SAMPLES</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chart-predictions"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Set Predictions Detailed Table -->
+      <div style="margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-family: var(--font-hud); font-size: 0.95rem; color: var(--text-main);">
+            📋 TEST SAMPLES PREDICTION & RESIDUALS (測試集預測與殘差明細)
+          </h3>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Random State = 0 (20% Holdout)</span>
+        </div>
+        <div class="hud-table-wrapper">
+          <table class="hud-table" id="test-predictions-table">
+            <thead>
+              <tr>
+                <th>SAMPLE #</th>
+                <th>ACTUAL PROFIT</th>
+                <th>PREDICTED PROFIT</th>
+                <th>RESIDUAL ($)</th>
+                <th>RESIDUAL (%)</th>
+                <th>FIT STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Cross-Method Comparison (All 5 Methods) -->
+    <section class="hud-section" id="comparison-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon">📈</span>
+          <span>CROSS-ALGORITHM COMPARISON // 五大演算法性能全景對比</span>
+        </div>
+        <!-- Toggle Tabs for Comparison View -->
+        <div class="chart-toggle-tabs">
+          <button class="chart-tab-btn active" data-comp-mode="rmse">RMSE 對比</button>
+          <button class="chart-tab-btn" data-comp-mode="r2">R² 對比</button>
+          <button class="chart-tab-btn" data-comp-mode="dual">雙指標檢視</button>
+        </div>
+      </div>
+
+      <!-- Main Comparative Chart -->
+      <div class="comparison-chart-card">
+        <div class="chart-card-title">
+          <span id="comparison-chart-header">📊 5 FEATURE SELECTION ALGORITHMS: RMSE VS NUMBER OF FEATURES (k)</span>
+          <span style="font-size: 0.75rem; color: var(--primary); font-family: var(--font-mono);">k = 1 ~ 6</span>
+        </div>
+        <div style="position: relative; height: 380px; width: 100%;">
+          <canvas id="chart-comparison"></canvas>
+        </div>
+      </div>
+
+      <!-- Complete Comparative Matrix Table -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-family: var(--font-hud); font-size: 1rem; color: var(--text-main); margin-bottom: 12px;">
+          📑 5 ALGORITHMS EVALUATION MATRIX TABLE (指標總表)
+        </h3>
+        <div class="hud-table-wrapper">
+          <table class="hud-table" id="full-comparison-matrix-table">
+            <thead>
+              <tr>
+                <th>k</th>
+                <th>FORWARD (RMSE / R²)</th>
+                <th>BACKWARD (RMSE / R²)</th>
+                <th>RFE (RMSE / R²)</th>
+                <th>LASSO (RMSE / R²)</th>
+                <th>CORRELATION (RMSE / R²)</th>
+                <th>BEST PERFORMANCE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: 50 Startups Dataset Explorer -->
+    <section class="hud-section" id="data-explorer-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon">📂</span>
+          <span>50 STARTUPS DATASET EXPLORER // 資料集原始檢視</span>
+        </div>
+        <button id="btn-toggle-raw-data" class="action-link" style="cursor: pointer; background: transparent;">
+          <span>展開原始資料 (50 筆)</span> ▼
+        </button>
+      </div>
+
+      <div id="raw-data-panel" style="display: none;">
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono);">
+          包含 50 間新創企業之研發支出 (R&D Spend)、行政費用 (Administration)、行銷費用 (Marketing Spend)、所在州 (State) 以及獲利 (Profit)。
+        </p>
+        <div class="hud-table-wrapper" style="max-height: 380px; overflow-y: auto;">
+          <table class="hud-table" id="raw-dataset-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>R&D SPEND</th>
+                <th>ADMINISTRATION</th>
+                <th>MARKETING SPEND</th>
+                <th>STATE</th>
+                <th>PROFIT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="hud-footer">
+      <p>AI Security Coursework // Lab 04_1: Feature Selection Interactive Suite</p>
+      <p style="margin-top: 6px;">
+        Deployed with <a href="https://github.com/AaronH945/AI_Security_HW/actions" target="_blank">GitHub Actions</a> on GitHub Pages.
+        Dataset: 50 Startups | Model: Multiple Linear Regression (OLS).
+      </p>
+    </footer>
+
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

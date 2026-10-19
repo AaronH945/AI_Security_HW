@@ -14,6 +14,7 @@ This repository contains homework assignments, lab exercises, and projects for t
 | **Lab 02 (L02)** | Lab 02 Interactive Interface & Telemetry | [Visit Lab 02](https://aaronh945.github.io/AI_Security_HW/L02/) |
 | **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
 | **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
+| **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)
@@ -24,6 +25,9 @@ This repository contains homework assignments, lab exercises, and projects for t
 
 ```text
 AI_Security_HW/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml    # GitHub Actions 自動部屬 GitHub Pages 工作流
 ├── index.html        # STARK HUD Main Portal & Directory
 ├── style.css         # Sci-Fi UI Styling & Themes
 ├── app.js            # Real-time Clock, Telemetry & Theme Switcher
@@ -71,6 +75,20 @@ AI_Security_HW/
 │   │   └── db.py     # PostgreSQL 連線池與自動 Schema
 │   ├── sql/schema.sql# PostgreSQL DDL
 │   └── README.md     # L03_1 Python 詳細架構與部署文件
+│
+├── L04/              # Lab / Homework 04 (Jupyter Notebooks 特徵選擇)
+│   ├── 50Startups.ipynb   # 50 Startups 前向、後向、RFE 特徵選擇
+│   ├── BostonHousing.ipynb# Boston Housing 前向、後向、RFE 特徵選擇
+│   ├── 50_Startups.csv    # 50 Startups 原始資料集
+│   └── BostonHousing.csv  # Boston Housing 原始資料集
+│
+├── L04_1/            # Lab / Homework 04_1 (Top 5 特徵選擇演算法互動式評估套件)
+│   ├── index.html    # STARK HUD 互動評估儀表板
+│   ├── style.css     # Sci-Fi 樣式與 4 套科幻主題
+│   ├── app.js        # 互動控制邏輯與預計算模型資料
+│   ├── data.json     # 5 種特徵選擇演算法與 OLS 預計算模型資料
+│   ├── 50_Startups.csv # 50 Startups 原始資料集
+│   └── README.md     # Lab 04_1 技術文件與演算法解析
 │
 └── Final/            # Final Capstone Project
 ```
