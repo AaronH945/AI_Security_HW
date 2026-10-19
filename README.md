@@ -15,6 +15,7 @@ This repository contains homework assignments, lab exercises, and projects for t
 | **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
 | **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
 | **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups & Boston Housing) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
+| **Lab 04_2 (L04_2)** | Top 5 特徵選擇演算法分析套件 (Kaggle S5E10 道路事故風險預測) | [Visit Lab 04_2](https://aaronh945.github.io/AI_Security_HW/L04_2/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)
@@ -81,6 +82,15 @@ AI_Security_HW/
 │   ├── BostonHousing.csv # Boston Housing 原始資料集
 │   ├── .nojekyll     # GitHub Pages 靜態構建支援
 │   └── README.md     # Lab 04_1 技術文件與本機 / 雲端運行說明
+│
+├── L04_2/            # Lab / Homework 04_2 (Top 5 特徵選擇 - Kaggle S5E10 道路事故風險預測)
+│   ├── app.py        # 100% Pure Python Streamlit 互動應用程式
+│   ├── requirements.txt # Python 依賴套件 (streamlit, pandas, scikit-learn, matplotlib)
+│   ├── index.html    # Stlite WebAssembly 瀏覽器運行入口 (GitHub Pages)
+│   ├── train.csv     # Kaggle S5E10 訓練資料集 (10,000 筆樣本)
+│   ├── s5e10_precomputed.json # 預計算特徵步階指標加速檔
+│   ├── .nojekyll     # GitHub Pages 靜態構建支援
+│   └── README.md     # Lab 04_2 技術文件與本機 / 雲端運行說明
 │
 └── Final/            # Final Capstone Project
 ```

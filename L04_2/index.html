@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Top 5 Feature Selection Lab // Kaggle S5E10 Road Accident Risk (Python / Streamlit)</title>
+  <meta name="description" content="100% Pure Python Streamlit 互動式特徵選擇演算法分析與評估系統 - Kaggle Playground Series S5E10 道路事故風險預測 - WebAssembly 部署於 GitHub Pages">
+
+  <!-- Stlite CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.72.0/build/stlite.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0e1117;
+    }
+  </style>
+</head>
+<body>
+  <!-- Stlite Mount Target -->
+  <div id="root"></div>
+
+  <!-- Stlite JavaScript Loader -->
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.72.0/build/stlite.js"></script>
+
+  <script>
+    stlite.mount({
+      requirements: ["pandas", "numpy", "scikit-learn", "matplotlib"],
+      entrypoint: "app.py",
+      files: {
+        "app.py": {
+          url: "./app.py"
+        },
+        "train.csv": {
+          url: "./train.csv"
+        },
+        "s5e10_precomputed.json": {
+          url: "./s5e10_precomputed.json"
+        }
+      }
+    }, document.getElementById("root"));
+  </script>
+</body>
+</html>
