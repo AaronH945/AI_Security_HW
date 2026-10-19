@@ -1,18 +1,37 @@
-# Lab 04_2: Top 5 Feature Selection Suite (Kaggle S5E10 Road Accident Risk)
+# Lab 04_2: Top 5 Feature Selection Multi-Dataset Laboratory (8 Benchmark Datasets)
 
-本專案為 **AI Security** 課程之實驗單元 **Lab 04_2**，遵循 **Lab 04_1** 之全 Python 科幻鋼鐵人 HUD（STARK Industries）架構，分析 **Kaggle Playground Series (Season 5, Episode 10)** 之競賽資料集：**Predicting Road Accident Risk (道路事故風險預測)**。
+本專案為 **AI Security** 課程之實驗單元 **Lab 04_2**，遵循 **Lab 04_1** 之全 Python 互動式架構，擴展支援 **8 大經典機器學習迴歸資料集**，並實作 **Top 5 特徵選擇演算法（Feature Selection Algorithms）** 之全維度步階分析、動態圖表呈現、跨演算法全景對比與 OLS 多元迴歸擬合診斷。
 
 [![GitHub Pages Deployment](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-00f2fe?style=for-the-badge&logo=github)](https://aaronh945.github.io/AI_Security_HW/L04_2/)
-[![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Playground%20S5E10-20beff?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/playground-series-s5e10/data)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.32%2B-FF4B4B?style=for-the-badge&logo=streamlit)](https://streamlit.io/)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-Stlite%200.72-654FF0?style=for-the-badge&logo=webassembly)](https://github.com/whitphx/stlite)
 
 ---
 
-## 📌 Top 5 特徵選擇演算法介紹 (Top 5 Feature Selection Algorithms)
+## 📁 支援 8 大機器學習迴歸資料集 (8 Supported Benchmark Datasets)
+
+使用者可在互動式介面左側選單中自由切換以下 8 套資料集，系統將自動調整特徵數量上限 $p$、最佳建議特徵數 $k^*$、評估指標與單位：
+
+| 編號 | 資料集名稱 | 目標變數 (`Target`) | 單位 | 特徵數 ($p$) | 建議最佳特徵數 ($k^*$) | 說明 |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
+| **01** | **Road Accident Risk**<br>(Kaggle S5E10 道路事故風險預測) | `accident_risk` | Risk (0~1) | 16 | $k=9$ | Kaggle Playground S5E10 競賽資料，預測道路事故風險等級。 |
+| **02** | **King County House Sales**<br>(美國華盛頓州金郡房價預測) | `price` | USD ($) | 16 | $k=10$ | 包含西雅圖地區房屋特徵（臥室數、衛浴數、面積、地段等）。 |
+| **03** | **Spotify Tracks Dataset**<br>(Spotify 音樂流行度預測) | `track_popularity` | Popularity (0~100) | 15 | $k=8$ | 基於歌曲聲學特徵（能量、舞蹈性、效價、節拍等）評估受歡迎度。 |
+| **04** | **Laptop Price Dataset**<br>(筆記型電腦售價預測) | `Price_inr` | INR (₹) | 16 | $k=9$ | 包含處理器、記憶體、硬碟容量、顯示卡與螢幕規格對售價之影響。 |
+| **05** | **Bike Sharing Demand**<br>(自行車共享租借需求預測) | `cnt` | Rentals / hr | 11 | $k=7$ | 結合氣溫、體感溫度、濕度、風速與季節小時預測每小時租借量。 |
+| **06** | **Used Car Price / CarDekho**<br>(二手車價格評估) | `Selling_Price` | Lakhs (₹) | 11 | $k=6$ | 分析出廠年分、里程數、燃油種類、傳動系統對車輛轉售價格之影響。 |
+| **07** | **House Rent Prediction**<br>(房屋月租金預測) | `Rent` | INR (₹) | 13 | $k=8$ | 分析房屋面積、房間規格、樓層位置與衛浴數對租金行情的影響。 |
+| **08** | **Flight Ticket Price Prediction**<br>(航空機票價格預測) | `Price` | INR (₹) | 16 | $k=10$ | 評估航空公司、航程時間、起降時段、轉機次數與艙等對票價之定價模型。 |
+
+---
+
+## 📌 Top 5 特徵選擇演算法原理 (Top 5 Feature Selection Algorithms)
 
 特徵選擇（Feature Selection）旨在從原始特徵空間中挑選最具代表性與預測價值的特徵子集，降低維度災難（Curse of Dimensionality）、防止過擬合（Overfitting）並提升模型的可解釋性。主流方法分為 **Filter（過濾法）**、**Wrapper（包裝法）** 與 **Embedded（嵌入法）** 三大類：
 
 ```
-                              ┌── Filter Method ──── 5. Correlation / Mutual Information
+                              ┌── Filter Method ──── 5. Pearson Correlation Filter
                               │
 Feature Selection ────────────┼── Wrapper Method ─── 1. Sequential Forward Selection (SFS)
                               │                      ├── 2. Sequential Backward Selection (SBS)
@@ -28,22 +47,6 @@ Feature Selection ────────────┼── Wrapper Method �
 | **#03** | **遞迴特徵消除 (RFE)**<br>`Recursive Feature Elimination` | **Wrapper / Hybrid** | 在標準化空間訓練模型，依據權重係數絕對值 $|\beta_j|$ 或重要性遞迴剃除最小權重特徵。 | $O((p - k) \cdot T)$ | 結合模型內部權重與貪婪消除，廣泛支援線性與樹模型。 | 需對特徵進行標準化，否則尺度影響權重排序。 |
 | **#04** | **Lasso 正則化**<br>`L1 Regularization (Lasso)` | **Embedded** | 在損失函數加入 L1 懲罰項 $\alpha \sum |\beta_j|$，因幾何形狀自然促使無關特徵係數直接收縮至精確為 0。 | $O(p \cdot T)$ | 訓練與特徵選擇同步完成，計算效率極高。 | 面臨高度共線性特徵時可能隨機僅挑選其中一個。 |
 | **#05** | **皮爾森相關過濾法**<br>`Pearson Correlation Filter` | **Filter** | 計算各變數與目標變數之相關係數絕對值 $\|r_{X_j, y}\|$，獨立於模型排序選取 Top $k$。 | $O(p \cdot n)$ | 運算速度極快（毫秒級），不依賴任何機器學習模型。 | 僅能捕捉單變量線性關係，忽略特徵間多元共線性。 |
-
----
-
-## 🚗 Kaggle S5E10 資料集評估與發現 (Dataset & Findings)
-
-- **競賽來源**：[Kaggle Playground Series (Season 5, Episode 10)](https://www.kaggle.com/competitions/playground-series-s5e10/data)
-- **目標變數**：`accident_risk`（連續數值評分，範圍約 $0.0 \sim 1.0$）
-- **樣本規模**：10,000 筆樣本，經 One-Hot Encoding 展開後共 20 個解釋特徵
-- **評估指標**：測試集 RMSE（均方根誤差，越低越好）與 $R^2$（模型解釋力，越高越好）
-
-### 評估矩陣摘要 ($k=1 \dots 20$)：
-- **$k=1$ (單一特徵基準)**：所有演算法一致選取 **道路曲率 (`curvature`)**，Test RMSE = `0.140114`，$R^2$ = `29.32%`。
-- **$k=2$**：選入 **夜間照明 (`lighting_night`)**，Test RMSE 大幅降至 `0.117243`，$R^2$ 提升至 `50.56%`。
-- **$k=3$**：選入 **速限 (`speed_limit`)**，Test RMSE 進一步收斂至 `0.087465`，$R^2$ 突破 `72.47%`。
-- **$k=5$**：選入 **事故回報次數 (`num_reported_accidents`)** 與 **晴天 (`weather_clear`)**，Test RMSE 達 `0.072936`。
-- **$k=9$ ⭐ (建議最佳特徵子集)**：Test RMSE 收斂至 **`0.072874`**，$R^2$ 達 **`80.84%`**（與 20 全特徵模型差異小於 $0.000005$，同時具備最高泛化能力與模型精簡度）。
 
 ---
 
@@ -70,14 +73,14 @@ streamlit run app.py
 
 ### 🌟 核心功能特色
 
-- **特徵數量動態滑桿 (Feature Count Slider)**：可自由切換特徵數量 $k \in [1, 20]$，即時連動全頁圖表與評估指標。
+- **8 大經典資料集自由切換**：隨選即時載入，特徵維度範圍自適應調整。
+- **特徵數量動態滑桿 (Feature Count Slider)**：可自由切換特徵數量 $k \in [1, p]$，即時連動全頁圖表與評估指標。
 - **演算法動態選擇 (Algorithm Selector)**：支援在 Top 5 演算法（SBS、SFS、RFE、Lasso、Correlation）間無縫切換。
-- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots 20$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
+- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots p$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
 - **雙並排評估指標圖 (Dual Subplots)**：以 Matplotlib 原生繪製 `RMSE by Number of Features` 與 `R-squared by Number of Features` 雙圖，並以發光金黃色節點動態標示當前 $k$ 之位置。
 - **跨演算法比較圖 (Cross-Algorithm Comparison)**：同時繪製 5 種特徵選擇演算法在各 $k$ 數量下的誤差與解釋力收斂走勢。
-- **多元迴歸方程式與係數長條圖**：動態擬合並輸出 OLS 數學公式與各變數之 $\beta$ 權重。
-- **測試集樣本預測與殘差診斷**：展示測試樣本之實際值 vs 預測值走勢與殘差百分比明細。
-- **原始資料檢視器 (Raw Data Viewer)**：可即時展開檢視 10,000 筆 Kaggle S5E10 原始資料。
+- **多元迴歸方程式與係數長條圖**：動態擬合並輸出 OLS 數學公式與各變數之 $\beta$ 權重與絕對重要性分佈。
+- **原始資料檢視器 (Raw Data Viewer)**：可即時展開檢視各資料集的原始資料樣本。
 
 ---
 

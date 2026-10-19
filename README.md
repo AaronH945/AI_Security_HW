@@ -15,7 +15,7 @@ This repository contains homework assignments, lab exercises, and projects for t
 | **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
 | **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
 | **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups & Boston Housing) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
-| **Lab 04_2 (L04_2)** | Top 5 特徵選擇演算法分析套件 (Kaggle S5E10 道路事故風險預測) | [Visit Lab 04_2](https://aaronh945.github.io/AI_Security_HW/L04_2/) |
+| **Lab 04_2 (L04_2)** | Top 5 特徵選擇演算法分析套件 (8 大機器學習迴歸資料集：道路事故、金郡房價、Spotify、筆電、自行車、二手車、租金、機票) | [Visit Lab 04_2](https://aaronh945.github.io/AI_Security_HW/L04_2/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)
@@ -83,14 +83,22 @@ AI_Security_HW/
 │   ├── .nojekyll     # GitHub Pages 靜態構建支援
 │   └── README.md     # Lab 04_1 技術文件與本機 / 雲端運行說明
 │
-├── L04_2/            # Lab / Homework 04_2 (Top 5 特徵選擇 - Kaggle S5E10 道路事故風險預測)
+├── L04_2/            # Lab / Homework 04_2 (Top 5 特徵選擇 - 8 大機器學習迴歸資料集)
 │   ├── app.py        # 100% Pure Python Streamlit 互動應用程式
 │   ├── requirements.txt # Python 依賴套件 (streamlit, pandas, scikit-learn, matplotlib)
 │   ├── index.html    # Stlite WebAssembly 瀏覽器運行入口 (GitHub Pages)
-│   ├── train.csv     # Kaggle S5E10 訓練資料集 (10,000 筆樣本)
-│   ├── s5e10_precomputed.json # 預計算特徵步階指標加速檔
+│   ├── all_datasets_precomputed.json # 8 大資料集預計算特徵步階指標加速檔
+│   ├── data/         # 8 套精準清洗之 CSV 資料集
+│   │   ├── accident_risk.csv       # Kaggle S5E10 道路事故風險 (5,000 筆)
+│   │   ├── kc_house_sales.csv      # 美國金郡房價 (5,000 筆)
+│   │   ├── spotify_tracks.csv      # Spotify 音樂流行度 (8,000 筆)
+│   │   ├── laptop_price.csv        # 筆記型電腦價格 (3,000 筆)
+│   │   ├── bike_sharing.csv        # 自行車共享租借需求 (3,000 筆)
+│   │   ├── used_car_price.csv      # CarDekho 二手車價格 (301 筆)
+│   │   ├── house_rent.csv          # 房屋租金行情 (3,000 筆)
+│   │   └── flight_ticket_price.csv # 機票價格預測 (3,000 筆)
 │   ├── .nojekyll     # GitHub Pages 靜態構建支援
-│   └── README.md     # Lab 04_2 技術文件與本機 / 雲端運行說明
+│   └── README.md     # Lab 04_2 技術文件與 8 套資料集規格說明
 │
 └── Final/            # Final Capstone Project
 ```
