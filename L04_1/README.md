@@ -53,56 +53,42 @@ Feature Selection ────────────┼── Wrapper Method �
 
 ---
 
-## 💻 互動式網頁功能特色 (Interactive Features)
+## 💻 互動式網頁與 Python 應用 (Interactive Python & WebAssembly)
 
-- **特徵維度動態調節**：可透過滑桿（Slider）或按鈕自由切換特徵數量 $k \in [1, 6]$，即時查看特徵選取狀態與係數方程式。
-- **即時迴歸方程式擬合**：動態輸出多元線性迴歸 OLS 擬合數學公式：$\text{Profit} = \beta_0 + \sum \beta_j X_j$。
-- **動態係數與殘差圖表**：使用 Chart.js 即時渲染係數權重條形圖與測試集預測 vs. 實際值折線圖。
-- **五大演算法全景對比**：支援切換「RMSE 對比模式」、「$R^2$ 對比模式」與「雙指標雙 Y 軸模式」。
-- **STARK HUD 視覺風格**：支援 4 套科幻主題動態切換（CYAN, MARK, EMERALD, PURPLE）。
-- **零依賴離線可用**：核心評估數據全數內嵌，本地以 `file:///` 開啟或部屬至靜態伺服器均能即刻運作。
+本專案採用 **100% Pure Python** 架構開發（無自訂 JavaScript 業務邏輯），支援兩種運行與佈署模式：
+1. **GitHub Pages WebAssembly 雲端即時運行**：透過 Stlite (Pyodide WebAssembly)，直接在瀏覽器端載入 Python 虛擬環境、Scikit-Learn 與 Matplotlib，無需任何後端伺服器！
+2. **本機原生 Python / Streamlit 運行**：支援透過 `requirements.txt` 在本機秒級啟動。
+
+### 📦 本機安裝與執行 (Local Execution)
+
+```bash
+# 1. 進入作業資料夾
+cd L04_1
+
+# 2. 安裝 Python 依賴
+pip install -r requirements.txt
+
+# 3. 啟動 Streamlit 互動網頁
+streamlit run app.py
+```
+
+瀏覽器將自動開啟 `http://localhost:8501`。
+
+### 🌟 核心功能特色
+
+- **特徵數量動態滑桿 (Feature Count Slider)**：可自由切換特徵數量 $k \in [1, 5]$，即時連動全頁圖表與評估指標。
+- **演算法動態選擇 (Algorithm Selector)**：支援在 Top 5 演算法（SBS、SFS、RFE、Lasso、Correlation）間無縫切換。
+- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots 5$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
+- **雙並排評估指標圖 (Dual Subplots)**：以 Matplotlib 原生繪製 `RMSE by Number of Features` 與 `R-squared by Number of Features` 雙圖，並以發光節點動態標示當前 $k$ 之位置。
+- **跨演算法比較圖 (Cross-Algorithm Comparison)**：同時繪製 5 種特徵選擇演算法在各 $k$ 數量下的誤差與解釋力收斂走勢。
+- **多元迴歸方程式與係數長條圖**：動態擬合並輸出 OLS 數學公式與各變數之 $\beta$ 權重。
+- **測試集樣本預測與殘差診斷**：展示 10 筆測試樣本之實際值 vs 預測值走勢與殘差百分比明細。
 
 ---
 
-## 🚀 部署指南 (Deployment via GitHub Actions)
+## 🚀 GitHub Actions 自動化佈署
 
-本專案配置於根目錄之 `.github/workflows/deploy.yml`，每次推送至 `main` 分支時，GitHub Actions 將自動構建並發布至 GitHub Pages：
+本專案配置於根目錄 `.github/workflows/deploy.yml`，在推送到 `main` 分支時自動將整包靜態資產與 Stlite WebAssembly 應用發布至 GitHub Pages。
 
-```yaml
-name: Deploy GitHub Pages
-
-on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-```
-
-訪問網址：[https://aaronh945.github.io/AI_Security_HW/L04_1/](https://aaronh945.github.io/AI_Security_HW/L04_1/)
+- **線上即時展示**：[https://aaronh945.github.io/AI_Security_HW/L04_1/](https://aaronh945.github.io/AI_Security_HW/L04_1/)
+- **主目錄導覽**：[https://aaronh945.github.io/AI_Security_HW/](https://aaronh945.github.io/AI_Security_HW/)

@@ -82,13 +82,13 @@ AI_Security_HW/
 │   ├── 50_Startups.csv    # 50 Startups 原始資料集
 │   └── BostonHousing.csv  # Boston Housing 原始資料集
 │
-├── L04_1/            # Lab / Homework 04_1 (Top 5 特徵選擇演算法互動式評估套件)
-│   ├── index.html    # STARK HUD 互動評估儀表板
-│   ├── style.css     # Sci-Fi 樣式與 4 套科幻主題
-│   ├── app.js        # 互動控制邏輯與預計算模型資料
-│   ├── data.json     # 5 種特徵選擇演算法與 OLS 預計算模型資料
+├── L04_1/            # Lab / Homework 04_1 (Top 5 特徵選擇演算法互動式評估套件 - Python)
+│   ├── app.py        # 100% Pure Python Streamlit 互動應用程式
+│   ├── requirements.txt # Python 依賴套件 (streamlit, pandas, scikit-learn, matplotlib)
+│   ├── index.html    # Stlite WebAssembly 瀏覽器運行入口 (GitHub Pages)
 │   ├── 50_Startups.csv # 50 Startups 原始資料集
-│   └── README.md     # Lab 04_1 技術文件與演算法解析
+│   ├── .nojekyll     # GitHub Pages 靜態構建支援
+│   └── README.md     # Lab 04_1 技術文件與本機 / 雲端運行說明
 │
 └── Final/            # Final Capstone Project
 ```
