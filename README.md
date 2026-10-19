@@ -76,12 +76,6 @@ AI_Security_HW/
 │   ├── sql/schema.sql# PostgreSQL DDL
 │   └── README.md     # L03_1 Python 詳細架構與部署文件
 │
-├── L04/              # Lab / Homework 04 (Jupyter Notebooks 特徵選擇)
-│   ├── 50Startups.ipynb   # 50 Startups 前向、後向、RFE 特徵選擇
-│   ├── BostonHousing.ipynb# Boston Housing 前向、後向、RFE 特徵選擇
-│   ├── 50_Startups.csv    # 50 Startups 原始資料集
-│   └── BostonHousing.csv  # Boston Housing 原始資料集
-│
 ├── L04_1/            # Lab / Homework 04_1 (Top 5 特徵選擇演算法互動式評估套件 - Python)
 │   ├── app.py        # 100% Pure Python Streamlit 互動應用程式
 │   ├── requirements.txt # Python 依賴套件 (streamlit, pandas, scikit-learn, matplotlib)
