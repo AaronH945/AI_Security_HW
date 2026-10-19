@@ -71,15 +71,21 @@ streamlit run app.py
 
 瀏覽器將自動開啟 `http://localhost:8501`。
 
-### 🌟 核心功能特色
+### 🌟 核心功能特色 (全面整合 huanchen1107 MultipleLR 規格)
 
 - **8 大經典資料集自由切換**：隨選即時載入，特徵維度範圍自適應調整。
-- **特徵數量動態滑桿 (Feature Count Slider)**：可自由切換特徵數量 $k \in [1, p]$，即時連動全頁圖表與評估指標。
+- **Top 5 評估指標摘要卡 (Summary Metric Cards)**：包含 Test RMSE、R² Score、Adjusted R²（校正特徵數懲罰）、Test MAE（平均絕對誤差）與 F-Statistic 全體模型顯著性檢定（含 p-value）。
+- **特徵選擇橫幅與奧卡姆剃刀洞察 (Occam's Razor Insight Card)**：顯示目前選入之變數標籤，並依據 $k$ 與最佳值 $k^*$ 自動判定為「低擬合區 (Underfitting)」、「最佳精簡平衡點 (Sweet Spot)」或「過擬合共線性風險區 (Overfitting Risk)」。
+- **特徵數量動態滑桿與快速跳轉鈕 (Feature Count Slider & Quick Jump)**：可自由切換特徵數量 $k \in [1, p]$，並提供 Min ($k=1$)、Sweet Spot ($k=k^*$) 與 Full ($k=p$) 快速跳轉按鈕。
 - **演算法動態選擇 (Algorithm Selector)**：支援在 Top 5 演算法（SBS、SFS、RFE、Lasso、Correlation）間無縫切換。
-- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots p$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
-- **雙並排評估指標圖 (Dual Subplots)**：以 Matplotlib 原生繪製 `RMSE by Number of Features` 與 `R-squared by Number of Features` 雙圖，並以發光金黃色節點動態標示當前 $k$ 之位置。
+- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots p$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`、`R-squared`、`Adjusted R²` 與 `MAE`（高精度）。
+- **雙並排評估指標圖 (Dual Subplots)**：以 Matplotlib 原生繪製 `RMSE by Number of Features` 與 `R-squared & Adj R² by Number of Features` 雙圖，並標示當前 $k$ 與最佳建議點。
 - **跨演算法比較圖 (Cross-Algorithm Comparison)**：同時繪製 5 種特徵選擇演算法在各 $k$ 數量下的誤差與解釋力收斂走勢。
+- **多元線性迴歸係數與統計推論檢驗表 (OLS Diagnostics & VIF)**：包含每項特徵之 Estimate ($\beta$)、標準誤 (Std. Error)、$t$ 統計量、雙尾 $p$ 值、顯著水準標示 (`***`, `**`, `*`, `ns`)、95% 信賴區間與共線性膨脹因子 (VIF)，並標註共線性安全級別。
 - **多元迴歸方程式與係數長條圖**：動態擬合並輸出 OLS 數學公式與各變數之 $\beta$ 權重與絕對重要性分佈。
+- **實際值 vs 預測值走勢散佈圖 (Actual vs. Predicted Diagnostic Plot)**：以 Holdout 測試集呈現實際值 vs 預測值走勢，並繪製 $y = x$ 理想預測基準線。
+- **測試集樣本預測與殘差診斷表 (Test Set Residual Analysis Table)**：展示測試集樣本之實際值、預測值、殘差 ($e = \hat{y} - y$)、絕對誤差、百分比誤差與診斷狀態標籤（`🟢 In Range`, `🟡 Moderate`, `🔴 Outlier`）。
+- **即時預測計算機 (Live Interactive What-If Scenario Simulator)**：針對當前選入特徵提供動態數值滑桿，即時計算預測值並展開特徵邊際貢獻度分解表。
 - **原始資料檢視器 (Raw Data Viewer)**：可即時展開檢視各資料集的原始資料樣本。
 
 ---
