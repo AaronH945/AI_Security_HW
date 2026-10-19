@@ -14,7 +14,7 @@ This repository contains homework assignments, lab exercises, and projects for t
 | **Lab 02 (L02)** | Lab 02 Interactive Interface & Telemetry | [Visit Lab 02](https://aaronh945.github.io/AI_Security_HW/L02/) |
 | **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
 | **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
-| **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
+| **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups & Boston Housing) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)
@@ -25,9 +25,6 @@ This repository contains homework assignments, lab exercises, and projects for t
 
 ```text
 AI_Security_HW/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml    # GitHub Actions 自動部屬 GitHub Pages 工作流
 ├── index.html        # STARK HUD Main Portal & Directory
 ├── style.css         # Sci-Fi UI Styling & Themes
 ├── app.js            # Real-time Clock, Telemetry & Theme Switcher
@@ -81,6 +78,7 @@ AI_Security_HW/
 │   ├── requirements.txt # Python 依賴套件 (streamlit, pandas, scikit-learn, matplotlib)
 │   ├── index.html    # Stlite WebAssembly 瀏覽器運行入口 (GitHub Pages)
 │   ├── 50_Startups.csv # 50 Startups 原始資料集
+│   ├── BostonHousing.csv # Boston Housing 原始資料集
 │   ├── .nojekyll     # GitHub Pages 靜態構建支援
 │   └── README.md     # Lab 04_1 技術文件與本機 / 雲端運行說明
 │

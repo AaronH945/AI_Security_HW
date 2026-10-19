@@ -1,6 +1,6 @@
-# Lab 04_1: Top 5 Feature Selection Interactive Suite (50 Startups)
+# Lab 04_1: Top 5 Feature Selection Interactive Suite (50 Startups & Boston Housing)
 
-本專案為 **AI Security** 課程之實驗單元 **Lab 04_1**，建構一個具備科幻鋼鐵人 HUD（STARK Industries）風格的互動式機器學習特徵選擇評估系統。
+本專案為 **AI Security** 課程之實驗單元 **Lab 04_1**，建構一個具備科幻鋼鐵人 HUD（STARK Industries）風格的互動式機器學習特徵選擇評估系統，支援 **50 Startups** 與 **Boston Housing** 雙資料集自由切換。
 
 [![GitHub Pages Deployment](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-00f2fe?style=for-the-badge&logo=github)](https://aaronh945.github.io/AI_Security_HW/L04_1/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated%20Deploy-38ef7d?style=for-the-badge&logo=githubactions)](https://github.com/AaronH945/AI_Security_HW/actions)
@@ -31,25 +31,21 @@ Feature Selection ────────────┼── Wrapper Method �
 
 ---
 
-## 📊 50 Startups 資料集評估與發現
+## 📊 支援資料集說明 (Supported Datasets)
 
-資料集包含 50 間新創企業之研發支出（`R&D Spend`）、行政費用（`Administration`）、行銷費用（`Marketing Spend`）、所在州別（`State_California`, `State_Florida`, `State_New York`）與獲利（`Profit`）。
+使用者可於系統側邊欄頂部即時切換以下兩套經典機器學習資料集：
 
-經由 80/20 Train/Test 分割（Random State = 0）之測試集評估指標矩陣：
+### 1. 50 Startups 資料集
+- **樣本數**：50 間新創企業
+- **特徵數**：5 個解釋變數（`R&D Spend`, `Administration`, `Marketing Spend`, `State_California`, `State_Florida` 等）
+- **目標變數**：`Profit`（企業獲利）
+- **最佳表現特徵數**：$k=2$（選取 `R&D Spend` 與 `Marketing Spend` 達全域最佳 RMSE 8198.80 / $R^2$ 94.74%）
 
-| $k$ (特徵數) | Forward (RMSE / $R^2$) | Backward (RMSE / $R^2$) | RFE (RMSE / $R^2$) | Lasso (RMSE / $R^2$) | Correlation (RMSE / $R^2$) | 最佳表現演算法 |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **k = 1** | 8274.87 / 94.65% | 8274.87 / 94.65% | 8274.87 / 94.65% | 8274.87 / 94.65% | 8274.87 / 94.65% | **All 5 Methods** (`R&D Spend`) |
-| **k = 2** ⭐ | **8198.80 / 94.74%** | **8198.80 / 94.74%** | **8198.80 / 94.74%** | **8198.80 / 94.74%** | **8198.80 / 94.74%** | **全域最佳點 (Global Best)** |
-| **k = 3** | 8803.78 / 93.94% | **8309.06 / 94.60%** | 8803.78 / 93.94% | 8803.78 / 93.94% | 8803.78 / 93.94% | **Backward** (`R&D + Mkt + NY`) |
-| **k = 4** | 8803.69 / 93.94% | **8409.92 / 94.47%** | 9068.54 / 93.57% | 8997.20 / 93.67% | 8803.69 / 93.94% | **Backward** (`R&D + Mkt + FL + NY`) |
-| **k = 5** | 9137.99 / 93.47% | **8409.92 / 94.47%** | 9137.99 / 93.47% | 9137.99 / 93.47% | 9137.99 / 93.47% | **Backward** (排除 Administration) |
-| **k = 6** | 9137.99 / 93.47% | 9137.99 / 93.47% | 9137.99 / 93.47% | 9137.99 / 93.47% | 9137.99 / 93.47% | 全特徵基準模型 |
-
-### 核心發現：
-1. **$k=2$ 為全域最佳模型**：所有五種演算法在 $k=2$ 時一致選取 `['R&D Spend', 'Marketing Spend']`，達到全域最低 RMSE（**8198.80**）與最高 $R^2$（**94.74%**）。
-2. **過擬合（Overfitting）驗證**：當特徵數量增加至 $k \ge 3$ 時，額外引入行政費用（`Administration`）或州別虛擬變數，測試集 RMSE 反而由 8198.80 上升至 9137.99，印證「奧坎剃刀原則」與特徵選擇之必要性。
-3. **後向消除（SBS）在中間維度的優勢**：在 $k=3 \sim 5$ 時，後向消除成功保留了州別虛擬變數與研發行銷之交互效益，表現明顯優於貪婪前向選擇。
+### 2. Boston Housing 資料集
+- **樣本數**：506 筆波士頓郊區房價資料
+- **特徵數**：13 個解釋變數（`crim`, `zn`, `indus`, `chas`, `nox`, `rm`, `age`, `dis`, `rad`, `tax`, `ptratio`, `b`, `lstat`）
+- **目標變數**：`medv`（房價中位數，以千美元 $1,000s 計）
+- **最佳表現特徵數**：$k=11 \sim 13$（隨特徵擴增 RMSE 由單一特徵 ~6.99 顯著收斂至 ~5.78，$R^2$ 提升至 58.9% 以上）
 
 ---
 
@@ -76,19 +72,20 @@ streamlit run app.py
 
 ### 🌟 核心功能特色
 
-- **特徵數量動態滑桿 (Feature Count Slider)**：可自由切換特徵數量 $k \in [1, 5]$，即時連動全頁圖表與評估指標。
+- **資料集即時切換 (Dataset Selector)**：側邊欄選單支援在 `50 Startups` 與 `Boston Housing` 間無縫切換。
+- **特徵數量自適應滑桿 (Adaptive Feature Slider)**：依選擇之資料集動態調整滑桿範圍（50 Startups 為 $k \in [1, 5]$，Boston Housing 為 $k \in [1, 13]$）。
 - **演算法動態選擇 (Algorithm Selector)**：支援在 Top 5 演算法（SBS、SFS、RFE、Lasso、Correlation）間無縫切換。
-- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots 5$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
+- **特徵篩選步階評估表 (Progression Table)**：呈現 $k=1 \dots p$ 各步階之 `Number of Features`、`Selected Features`、`RMSE`（6 位精度）與 `R-squared`（6 位精度）。
 - **雙並排評估指標圖 (Dual Subplots)**：以 Matplotlib 原生繪製 `RMSE by Number of Features` 與 `R-squared by Number of Features` 雙圖，並以發光節點動態標示當前 $k$ 之位置。
 - **跨演算法比較圖 (Cross-Algorithm Comparison)**：同時繪製 5 種特徵選擇演算法在各 $k$ 數量下的誤差與解釋力收斂走勢。
 - **多元迴歸方程式與係數長條圖**：動態擬合並輸出 OLS 數學公式與各變數之 $\beta$ 權重。
-- **測試集樣本預測與殘差診斷**：展示 10 筆測試樣本之實際值 vs 預測值走勢與殘差百分比明細。
+- **測試集樣本預測與殘差診斷**：展示測試樣本之實際值 vs 預測值走勢與殘差百分比明細。
 
 ---
 
-## 🚀 GitHub Actions 自動化佈署
+## 🚀 GitHub Pages 雲端佈署
 
-本專案配置於根目錄 `.github/workflows/deploy.yml`，在推送到 `main` 分支時自動將整包靜態資產與 Stlite WebAssembly 應用發布至 GitHub Pages。
+本專案支援 GitHub Pages，在推送到 `main` 分支時自動將整包靜態資產與 Stlite WebAssembly 應用發布至線上網站，使用者無須本機安裝 Python 即可透過瀏覽器直接執行。
 
 - **線上即時展示**：[https://aaronh945.github.io/AI_Security_HW/L04_1/](https://aaronh945.github.io/AI_Security_HW/L04_1/)
 - **主目錄導覽**：[https://aaronh945.github.io/AI_Security_HW/](https://aaronh945.github.io/AI_Security_HW/)
