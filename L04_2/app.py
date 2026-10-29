@@ -239,18 +239,30 @@ KAGGLE_MIRROR_MAP = {
 def parse_kaggle_input(input_str):
     if not input_str:
         return ""
-    input_str = input_str.strip()
-    if input_str.startswith("http://") or input_str.startswith("https://"):
-        if "kaggle.com/datasets/" in input_str:
-            parts = input_str.split("kaggle.com/datasets/")[1].split("?")[0].strip("/").split("/")
-            if len(parts) >= 2:
-                return f"{parts[0]}/{parts[1]}"
-        elif "kaggle.com/competitions/" in input_str:
-            comp = input_str.split("kaggle.com/competitions/")[1].split("?")[0].strip("/").split("/")
-            if comp:
-                return comp[0]
-        # Direct URL (e.g., https://raw.githubusercontent.com/... or other CSV)
+    input_str = input_str.strip().strip("\"' ")
+    if (input_str.startswith("http://") or input_str.startswith("https://")) and "kaggle.com" not in input_str:
         return input_str
+    clean_lower = input_str.lower()
+    if "kaggle.com/datasets/" in clean_lower:
+        idx = clean_lower.find("kaggle.com/datasets/") + len("kaggle.com/datasets/")
+        after = input_str[idx:].split("?")[0].strip("/")
+        parts = [p for p in after.split("/") if p]
+        if len(parts) >= 2:
+            return f"{parts[0]}/{parts[1]}"
+        elif len(parts) == 1:
+            return parts[0]
+    if "kaggle.com/competitions/" in clean_lower:
+        idx = clean_lower.find("kaggle.com/competitions/") + len("kaggle.com/competitions/")
+        after = input_str[idx:].split("?")[0].strip("/")
+        parts = [p for p in after.split("/") if p]
+        if parts:
+            return parts[0]
+    if "kaggle.com/" in clean_lower:
+        idx = clean_lower.find("kaggle.com/") + len("kaggle.com/")
+        after = input_str[idx:].split("?")[0].strip("/")
+        parts = [p for p in after.split("/") if p]
+        if len(parts) >= 2:
+            return f"{parts[0]}/{parts[1]}"
     return input_str
 
 def detect_target_and_type(df, user_target=None):
@@ -566,16 +578,44 @@ if dataset_id == "custom_kaggle":
     st.sidebar.markdown("---")
     st.sidebar.subheader("🌐 輸入 Kaggle 資料集")
     
+    preset_dict = {
+        "mirichoi0218/insurance": "🏥 醫療保費預測 (mirichoi0218/insurance) [迴歸]",
+        "camnugent/california-housing-prices": "🏡 加州房價預測 (camnugent/california-housing-prices) [迴歸]",
+        "uciml/red-wine-quality-cortez-et-al-2009": "🍷 紅酒品質預測 (uciml/red-wine-quality) [迴歸]",
+        "playground-series-s5e10": "🚗 道路事故風險 (playground-series-s5e10) [迴歸]",
+        "uciml/iris": "🌸 鳶尾花花卉種類 (uciml/iris) [分類警報測試]",
+        "heptapod/titanic": "🚢 鐵達尼號生還 (heptapod/titanic) [分類警報測試]",
+        "custom": "✏️ 手動輸入任意 Kaggle 資料集或 CSV 網址"
+    }
+    
     if "kaggle_input_val" not in st.session_state:
         st.session_state["kaggle_input_val"] = "mirichoi0218/insurance"
         
-    kaggle_handle_raw = st.sidebar.text_input(
-        "Kaggle Dataset Handle 或網址:",
-        value=st.session_state["kaggle_input_val"],
-        help="輸入格式如: owner/dataset-name 或完整 Kaggle 網址"
+    # Check if current input_val matches a known preset
+    current_val = st.session_state["kaggle_input_val"]
+    default_preset_idx = list(preset_dict.keys()).index(current_val) if current_val in preset_dict else len(preset_dict) - 1
+    
+    selected_preset_key = st.sidebar.selectbox(
+        "快速選擇熱門資料集 (Quick Select):",
+        options=list(preset_dict.keys()),
+        format_func=lambda k: preset_dict[k],
+        index=default_preset_idx
     )
     
-    st.sidebar.markdown("**快速測試範例 (Quick Presets):**")
+    if selected_preset_key != "custom":
+        kaggle_handle_raw = selected_preset_key
+        st.session_state["kaggle_input_val"] = selected_preset_key
+        st.sidebar.caption(f"已選取即時鏡像: `{selected_preset_key}`")
+    else:
+        kaggle_handle_raw = st.sidebar.text_input(
+            "請輸入 Kaggle Dataset Handle 或網址:",
+            value=st.session_state.get("custom_typed_val", "mirichoi0218/insurance"),
+            help="輸入格式如: owner/dataset-name 或完整 Kaggle 網址"
+        )
+        st.session_state["custom_typed_val"] = kaggle_handle_raw
+        st.session_state["kaggle_input_val"] = kaggle_handle_raw
+        
+    st.sidebar.markdown("**或點擊下方按鈕快速切換:**")
     col_p1, col_p2 = st.sidebar.columns(2)
     with col_p1:
         if st.sidebar.button("醫療保費 (迴歸)"):
@@ -681,7 +721,29 @@ if dataset_id == "custom_kaggle":
                 )
                 
     if df_loaded is None or df_loaded.empty:
-        st.info("請在左側輸入 Kaggle 資料集名稱、貼上 CSV 網址或上傳 CSV 檔案以開始分析。")
+        st.markdown("""
+        <div style='background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 12px; padding: 24px; margin: 20px 0;'>
+            <h3 style='color: #00f2fe; margin-top: 0; display: flex; align-items: center; gap: 10px;'>
+                🌐 自訂資料集分析中心 (Custom Dataset Explorer)
+            </h3>
+            <p style='color: #94a3b8; font-size: 1.02rem; line-height: 1.6;'>
+                歡迎使用自訂資料集探索中心！您可以由<strong>左側選單</strong>快速挑選常見 Kaggle 迴歸與分類資料集鏡像、輸入任意 Kaggle Handle、貼上公開 CSV 原始網址，或直接點擊下方推薦範例一鍵啟動分析：
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
+            if st.button("🏥 載入醫療保費預測 (迴歸任務)"):
+                st.session_state["kaggle_input_val"] = "mirichoi0218/insurance"
+                st.rerun()
+        with col_m2:
+            if st.button("🏡 載入加州房價預測 (迴歸任務)"):
+                st.session_state["kaggle_input_val"] = "camnugent/california-housing-prices"
+                st.rerun()
+        with col_m3:
+            if st.button("🌸 載入鳶尾花分類 (分類任務示範)"):
+                st.session_state["kaggle_input_val"] = "uciml/iris"
+                st.rerun()
         st.stop()
         
     # Target detection and Task Classification

@@ -6,6 +6,10 @@
   <title>Top 5 Feature Selection Suite // 8 ML Datasets (Python / Streamlit)</title>
   <meta name="description" content="100% Pure Python Streamlit 互動式特徵選擇演算法分析與評估系統 - 支援 8 大機器學習迴歸資料集 - WebAssembly 部署於 GitHub Pages">
 
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <!-- Stlite CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.72.0/build/stlite.css" />
   <style>
@@ -24,15 +28,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.72.0/build/stlite.js"></script>
 
   <script>
+    const _cb = Date.now();
     stlite.mount({
       requirements: ["pandas", "numpy", "scikit-learn", "matplotlib", "scipy"],
       entrypoint: "app.py",
       files: {
         "app.py": {
-          url: "./app.py"
+          url: "./app.py?v=" + _cb
         },
         "all_datasets_precomputed.json": {
-          url: "./all_datasets_precomputed.json"
+          url: "./all_datasets_precomputed.json?v=" + _cb
         },
         "data/accident_risk.csv": {
           url: "./data/accident_risk.csv"
