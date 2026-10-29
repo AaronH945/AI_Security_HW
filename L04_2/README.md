@@ -74,6 +74,11 @@ streamlit run app.py
 ### 🌟 核心功能特色 (全面整合 huanchen1107 MultipleLR 規格)
 
 - **8 大經典資料集自由切換**：隨選即時載入，特徵維度範圍自適應調整。
+- **🌐 智慧型 Kaggle 資料集載入與分類/迴歸自動檢測**：
+  - 支援輸入任何 Kaggle Dataset Handle 或網址（例如 `mirichoi0218/insurance`、`camnugent/california-housing-prices`、`uciml/iris`），底層自動下載。
+  - **自動判定任務類型**：
+    - 若為「**分類任務 (Classification)**」：立即跳出警示卡，標註類別標籤與判定依據，提醒使用者改輸入用於迴歸預測之資料集，並提供快速切換推薦按鈕。
+    - 若為「**迴歸預測 (Regression)**」：自動清洗特徵、執行 Top 5 特徵選擇與 OLS 統計推論，並生成全套 16 大分析診斷圖表與 What-If 即時模擬器。
 - **Top 5 評估指標摘要卡 (Summary Metric Cards)**：包含 Test RMSE、R² Score、Adjusted R²（校正特徵數懲罰）、Test MAE（平均絕對誤差）與 F-Statistic 全體模型顯著性檢定（含 p-value）。
 - **特徵選擇橫幅與奧卡姆剃刀洞察 (Occam's Razor Insight Card)**：顯示目前選入之變數標籤，並依據 $k$ 與最佳值 $k^*$ 自動判定為「低擬合區 (Underfitting)」、「最佳精簡平衡點 (Sweet Spot)」或「過擬合共線性風險區 (Overfitting Risk)」。
 - **特徵數量動態滑桿與快速跳轉鈕 (Feature Count Slider & Quick Jump)**：可自由切換特徵數量 $k \in [1, p]$，並提供 Min ($k=1$)、Sweet Spot ($k=k^*$) 與 Full ($k=p$) 快速跳轉按鈕。

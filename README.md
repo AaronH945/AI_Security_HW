@@ -15,7 +15,7 @@ This repository contains homework assignments, lab exercises, and projects for t
 | **Lab 03 (L03)** | CWA 台灣氣象站地圖 & PostgreSQL 系統 (JavaScript) | [Visit Lab 03](https://aaronh945.github.io/AI_Security_HW/L03/) |
 | **Lab 03_1 (L03_1)** | CWA 台灣氣象站地圖 (Python + Vercel Edition) | [Visit Lab 03_1](https://aaronh945.github.io/AI_Security_HW/L03_1/) |
 | **Lab 04_1 (L04_1)** | Top 5 特徵選擇演算法互動式評估套件 (50 Startups & Boston Housing) | [Visit Lab 04_1](https://aaronh945.github.io/AI_Security_HW/L04_1/) |
-| **Lab 04_2 (L04_2)** | Top 5 特徵選擇演算法分析套件 (8 大機器學習迴歸資料集：道路事故、金郡房價、Spotify、筆電、自行車、二手車、租金、機票) | [Visit Lab 04_2](https://aaronh945.github.io/AI_Security_HW/L04_2/) |
+| **Lab 04_2 (L04_2)** | Top 5 特徵選擇演算法分析套件 (8 大機器學習迴歸資料集 + 智慧 Kaggle 資料集載入與分類/迴歸檢測) | [Visit Lab 04_2](https://aaronh945.github.io/AI_Security_HW/L04_2/) |
 | **Final Project** | Capstone Final Project Hub | *Standby / Pending* |
 
 ![STARK HUD Main Hub Preview](screenshot.png)

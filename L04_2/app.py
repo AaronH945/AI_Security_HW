@@ -2,17 +2,11 @@
 Top 5 Feature Selection & Multiple Linear Regression Explorer (Lab 04_2)
 ========================================================================
 Inspired by AIoT-DIC2 MultipleLR Architecture (https://huanchen1107.github.io/AIoT-DIC2-MultipleLR/)
-Supports 8 Benchmark Machine Learning Regression Datasets:
-1. Road Accident Risk (Kaggle S5E10 道路事故預測)
-2. King County House Sales (美國金郡房價預測)
-3. Spotify Tracks Dataset (Spotify 音樂流行度預測)
-4. Laptop Price Dataset (筆記型電腦價格預測)
-5. Bike Sharing Demand (自行車共享租借預測)
-6. Used Car Price Prediction / CarDekho (二手車價格預測)
-7. House Rent Prediction Dataset (房屋租金預測)
-8. Flight Ticket Price Prediction (機票價格預測)
+Supports:
+1. 8 Benchmark Machine Learning Regression Datasets
+2. Dynamic Kaggle Dataset Fetching & Auto-Classification / Regression Detection
 
-100% Pure Python implementation using Streamlit, Scikit-Learn, Pandas, NumPy, and Matplotlib.
+100% Pure Python implementation using Streamlit, Scikit-Learn, Pandas, NumPy, Matplotlib, SciPy, and KaggleHub.
 Runs locally (`streamlit run app.py`) and on GitHub Pages via WebAssembly (Stlite/Pyodide).
 """
 
@@ -22,12 +16,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 import os
+import glob
+import time
+import scipy.stats as stats
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, LassoCV
+from sklearn.feature_selection import RFE
+from sklearn.metrics import root_mean_squared_error, r2_score, mean_absolute_error
+
+try:
+    import kagglehub
+except ImportError:
+    kagglehub = None
 
 # -----------------------------------------------------------------------------
 # 1. Page Configuration & Custom CSS Styling
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Multiple Linear Regression & Feature Selection Explorer // 8 ML Datasets",
+    page_title="Multiple Linear Regression & Feature Selection Explorer // 8 ML Datasets + Kaggle",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -125,6 +131,20 @@ st.markdown("""
         color: #38ef7d;
         font-family: monospace;
     }
+    .clf-alert-card {
+        background: rgba(244, 63, 94, 0.12);
+        border: 2px solid #f43f5e;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 20px 0;
+    }
+    .reg-success-card {
+        background: rgba(16, 185, 129, 0.12);
+        border: 2px solid #10b981;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -139,7 +159,8 @@ DATASET_MAP = {
     "🚲 Bike Sharing Demand (自行車共享租借預測)": "bike",
     "🚘 Used Car Price Prediction / CarDekho (二手車價格預測)": "used_car",
     "🏢 House Rent Prediction Dataset (房屋租金預測)": "house_rent",
-    "✈️ Flight Ticket Price Prediction (機票價格預測)": "flight"
+    "✈️ Flight Ticket Price Prediction (機票價格預測)": "flight",
+    "🌐 🔍 自訂 Kaggle 資料集 (Custom Kaggle Dataset)": "custom_kaggle"
 }
 
 # Load Master Precomputed Data directly without caching issues
@@ -162,7 +183,315 @@ def load_all_precomputed():
 master_precomputed = load_all_precomputed()
 
 # -----------------------------------------------------------------------------
-# 3. Sidebar: Dataset Selection & Controls
+# 3. Dynamic Kaggle Fetching & Classification / Regression Detector
+# -----------------------------------------------------------------------------
+def parse_kaggle_input(input_str):
+    input_str = input_str.strip()
+    if "kaggle.com/datasets/" in input_str:
+        parts = input_str.split("kaggle.com/datasets/")[1].split("?")[0].strip("/").split("/")
+        if len(parts) >= 2:
+            return f"{parts[0]}/{parts[1]}"
+    elif "kaggle.com/competitions/" in input_str:
+        comp = input_str.split("kaggle.com/competitions/")[1].split("?")[0].strip("/").split("/")[0]
+        return comp
+    return input_str
+
+def detect_target_and_type(df, user_target=None):
+    if user_target and user_target in df.columns:
+        target = user_target
+    else:
+        # Heuristic search for probable regression target
+        candidates = ['target', 'charges', 'price', 'rent', 'sales', 'cnt', 'accident_risk', 
+                      'popularity', 'value', 'median_house_value', 'label', 'class', 'species', 'survived', 'outcome', 'y']
+        target = None
+        for c in candidates:
+            for col in df.columns:
+                if col.lower() == c or col.lower().endswith('_' + c):
+                    target = col
+                    break
+            if target:
+                break
+        if not target:
+            num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            target = num_cols[-1] if num_cols else df.columns[-1]
+            
+    y = df[target]
+    n_unique = y.nunique()
+    is_num = pd.api.types.is_numeric_dtype(y)
+    
+    # Classification check
+    if not is_num:
+        is_classification = True
+        classes = sorted([str(x) for x in y.dropna().unique().tolist()[:6]])
+        reason = f"目標變數 '{target}' 為文字/類別型態 (dtype={y.dtype})，包含 {n_unique} 個類別 (如: {classes})。"
+    elif n_unique <= 5:
+        is_classification = True
+        classes = sorted(y.dropna().unique().tolist())
+        reason = f"目標變數 '{target}' 僅有 {n_unique} 個相異數值 ({classes})，為離散分類標籤。"
+    elif n_unique <= 15 and (y.dropna() == y.dropna().round()).all() and (n_unique / len(y) < 0.05):
+        is_classification = True
+        classes = sorted(y.dropna().unique().tolist()[:6])
+        reason = f"目標變數 '{target}' 為離散整數類別 (相異值數={n_unique}，如: {classes}...)"
+    else:
+        is_classification = False
+        reason = f"目標變數 '{target}' 為連續數值型態 (相異值數={n_unique}，數值範圍={y.min():,.2f} ~ {y.max():,.2f})。"
+        
+    return {
+        "target": target,
+        "is_classification": is_classification,
+        "reason": reason,
+        "n_unique": n_unique,
+        "dtype": str(y.dtype)
+    }
+
+def build_dynamic_dataset_analysis(df_raw, target_col, dataset_name="Custom Kaggle Dataset", unit="Units"):
+    df = df_raw.copy()
+    df = df.dropna(subset=[target_col])
+    if len(df) > 4000:
+        df = df.sample(n=4000, random_state=0)
+        
+    y_raw = df[target_col].astype(float)
+    X_raw = df.drop(columns=[target_col])
+    
+    # Drop pure ID columns or high-cardinality unique text
+    drop_candidates = []
+    for c in X_raw.columns:
+        if X_raw[c].nunique() <= 1:
+            drop_candidates.append(c)
+        elif X_raw[c].dtype == object and (X_raw[c].nunique() > 50 or X_raw[c].nunique() == len(X_raw)):
+            drop_candidates.append(c)
+        elif c.lower() in ['id', 'index', 'unnamed: 0']:
+            drop_candidates.append(c)
+    X_raw = X_raw.drop(columns=drop_candidates)
+    
+    # Dummy encoding
+    X_encoded = pd.get_dummies(X_raw, drop_first=True, dtype=float)
+    for c in X_encoded.columns:
+        if X_encoded[c].isnull().any():
+            X_encoded[c] = X_encoded[c].fillna(X_encoded[c].median())
+            
+    X_encoded = X_encoded.loc[:, X_encoded.nunique() > 1]
+    
+    if len(X_encoded.columns) > 16:
+        corrs = X_encoded.apply(lambda col: np.corrcoef(col, y_raw)[0, 1]).abs().fillna(0)
+        top_cols = corrs.sort_values(ascending=False).head(16).index.tolist()
+        X_encoded = X_encoded[top_cols]
+        
+    p = len(X_encoded.columns)
+    feature_cols = X_encoded.columns.tolist()
+    df_clean = pd.concat([X_encoded, y_raw.rename(target_col)], axis=1)
+    
+    train_df, test_df = train_test_split(df_clean, test_size=0.2, random_state=0)
+    X_train, y_train = train_df[feature_cols], train_df[target_col]
+    X_test, y_test = test_df[feature_cols], test_df[target_col]
+    
+    n_tr, n_te = len(X_train), len(X_test)
+    
+    def eval_subset(feats):
+        k = len(feats)
+        lr = LinearRegression()
+        lr.fit(X_train[feats], y_train)
+        y_test_pred = lr.predict(X_test[feats])
+        y_train_pred = lr.predict(X_train[feats])
+        
+        rmse_te = float(root_mean_squared_error(y_test, y_test_pred))
+        r2_te = float(r2_score(y_test, y_test_pred))
+        mae_te = float(mean_absolute_error(y_test, y_test_pred))
+        
+        rmse_tr = float(root_mean_squared_error(y_train, y_train_pred))
+        r2_tr = float(r2_score(y_train, y_train_pred))
+        
+        df_denom = max(1, n_te - k - 1)
+        adj_r2 = float(1.0 - (1.0 - r2_te) * (n_te - 1) / df_denom) if r2_te > -10.0 else -10.0
+        
+        if r2_te >= 0.99999:
+            f_stat, f_pval = 9999.0, 0.0
+        elif r2_te <= 0:
+            f_stat, f_pval = 0.0, 1.0
+        else:
+            f_stat = float((r2_te / k) / max(1e-9, (1.0 - r2_te) / df_denom))
+            f_pval = float(stats.f.sf(f_stat, k, df_denom))
+            
+        X_design = np.column_stack([np.ones(n_tr), X_train[feats].values])
+        beta_all = np.concatenate([[lr.intercept_], lr.coef_])
+        residuals = y_train.values - X_design @ beta_all
+        mse_resid = max(1e-9, np.sum(residuals**2) / max(1, n_tr - k - 1))
+        
+        try:
+            cov_beta = mse_resid * np.linalg.pinv(X_design.T @ X_design)
+            se_beta = np.sqrt(np.maximum(1e-9, np.diag(cov_beta)))
+            t_stats = beta_all / se_beta
+            p_vals = 2.0 * (1.0 - stats.t.cdf(np.abs(t_stats), df=max(1, n_tr - k - 1)))
+        except Exception:
+            se_beta = np.zeros(k + 1)
+            t_stats = np.zeros(k + 1)
+            p_vals = np.ones(k + 1)
+            
+        vifs = []
+        for i, f in enumerate(feats):
+            if k == 1:
+                vifs.append(1.0)
+            else:
+                other_f = [col for col in feats if col != f]
+                r2_j = LinearRegression().fit(X_train[other_f], X_train[f]).score(X_train[other_f], X_train[f])
+                vif_val = 1.0 / max(1e-4, (1.0 - r2_j)) if r2_j < 0.9999 else 999.9
+                vifs.append(float(min(999.9, vif_val)))
+                
+        diag_records = []
+        p_val_0 = float(round(p_vals[0], 5))
+        sig_0 = "***" if p_val_0 < 0.001 else ("**" if p_val_0 < 0.01 else ("*" if p_val_0 < 0.05 else "ns"))
+        diag_records.append({
+            "feature": "(Intercept)",
+            "beta": round(float(beta_all[0]), 4),
+            "se": round(float(se_beta[0]), 4),
+            "t_stat": round(float(t_stats[0]), 3),
+            "p_val": p_val_0,
+            "significance": sig_0,
+            "ci_lower": round(float(beta_all[0] - 1.96 * se_beta[0]), 4),
+            "ci_upper": round(float(beta_all[0] + 1.96 * se_beta[0]), 4),
+            "vif": "-",
+            "vif_status": "-"
+        })
+        
+        for idx_f, f_name in enumerate(feats):
+            b_val = round(float(beta_all[idx_f + 1]), 4)
+            se_val = round(float(se_beta[idx_f + 1]), 4)
+            t_val = round(float(t_stats[idx_f + 1]), 3)
+            p_val = round(float(p_vals[idx_f + 1]), 5)
+            sig = "***" if p_val < 0.001 else ("**" if p_val < 0.01 else ("*" if p_val < 0.05 else "ns"))
+            vif_f = round(vifs[idx_f], 2)
+            v_status = "Safe (<5)" if vif_f < 5.0 else ("Moderate (5-10)" if vif_f <= 10.0 else "High (>10)")
+            diag_records.append({
+                "feature": f_name,
+                "beta": b_val,
+                "se": se_val,
+                "t_stat": t_val,
+                "p_val": p_val,
+                "significance": sig,
+                "ci_lower": round(float(b_val - 1.96 * se_val), 4),
+                "ci_upper": round(float(b_val + 1.96 * se_val), 4),
+                "vif": f"{vif_f:.2f}",
+                "vif_status": v_status
+            })
+            
+        test_samples = []
+        for i in range(min(15, n_te)):
+            act = round(float(y_test.iloc[i]), 4)
+            pred = round(float(y_test_pred[i]), 4)
+            res = round(float(pred - act), 4)
+            abs_err = round(abs(res), 4)
+            denom = abs(act) if abs(act) > 1e-4 else (abs(np.mean(y_test)) + 1e-4)
+            pct_err = round(float((abs_err / denom) * 100.0), 2)
+            status = "In Range (<=15%)" if pct_err <= 15.0 else ("Moderate (15-30%)" if pct_err <= 30.0 else "High Residual (>30%)")
+            test_samples.append({
+                "id": i + 1,
+                "actual": act,
+                "predicted": pred,
+                "residual": res,
+                "abs_error": abs_err,
+                "pct_error": pct_err,
+                "status": status
+            })
+            
+        return {
+            'features': feats,
+            'RMSE': round(rmse_te, 6),
+            'R-squared': round(r2_te, 6),
+            'Adjusted_R2': round(adj_r2, 6),
+            'MAE': round(mae_te, 6),
+            'F_stat': round(f_stat, 3),
+            'F_pval': round(f_pval, 6),
+            'RMSE_train': round(rmse_tr, 6),
+            'R2_train': round(r2_tr, 6),
+            'intercept': round(float(lr.intercept_), 5),
+            'coefficients': [round(float(c), 5) for c in lr.coef_],
+            'diagnostics': diag_records,
+            'test_samples': test_samples
+        }
+        
+    # SFS
+    sfs_steps = {}
+    remaining = list(feature_cols)
+    current_feats = []
+    for k in range(1, p + 1):
+        best_f, best_rmse = None, float('inf')
+        for cand in remaining:
+            trial_feats = current_feats + [cand]
+            lr_t = LinearRegression().fit(X_train[trial_feats], y_train)
+            trial_rmse = root_mean_squared_error(y_test, lr_t.predict(X_test[trial_feats]))
+            if trial_rmse < best_rmse:
+                best_rmse = trial_rmse
+                best_f = cand
+        current_feats.append(best_f)
+        remaining.remove(best_f)
+        sfs_steps[str(k)] = eval_subset(list(current_feats))
+        
+    # SBS
+    sbs_steps = {}
+    curr_sbs = list(feature_cols)
+    sbs_subsets = {p: list(curr_sbs)}
+    for k in range(p - 1, 0, -1):
+        worst_f, best_rmse = None, float('inf')
+        for cand in curr_sbs:
+            trial_feats = [f for f in curr_sbs if f != cand]
+            lr_t = LinearRegression().fit(X_train[trial_feats], y_train)
+            trial_rmse = root_mean_squared_error(y_test, lr_t.predict(X_test[trial_feats]))
+            if trial_rmse < best_rmse:
+                best_rmse = trial_rmse
+                worst_f = cand
+        curr_sbs.remove(worst_f)
+        sbs_subsets[k] = list(curr_sbs)
+    for k in range(1, p + 1):
+        sbs_steps[str(k)] = eval_subset(sbs_subsets[k])
+        
+    # RFE
+    rfe_steps = {}
+    rfe_model = RFE(estimator=LinearRegression(), n_features_to_select=1, step=1)
+    rfe_model.fit(X_train, y_train)
+    rfe_ranking = sorted(zip(feature_cols, rfe_model.ranking_), key=lambda x: x[1])
+    rfe_order = [x[0] for x in rfe_ranking]
+    for k in range(1, p + 1):
+        rfe_steps[str(k)] = eval_subset(rfe_order[:k])
+        
+    # Lasso
+    lasso_steps = {}
+    lasso_cv = LassoCV(cv=min(5, len(X_train)), random_state=0, max_iter=3000)
+    lasso_cv.fit(X_train, y_train)
+    coef_order = sorted(zip(feature_cols, np.abs(lasso_cv.coef_)), key=lambda x: x[1], reverse=True)
+    lasso_order = [x[0] for x in coef_order]
+    for k in range(1, p + 1):
+        lasso_steps[str(k)] = eval_subset(lasso_order[:k])
+        
+    # Pearson Correlation
+    corr_steps = {}
+    corrs = X_train.apply(lambda col: np.corrcoef(col, y_train)[0, 1]).abs().fillna(0)
+    corr_order = corrs.sort_values(ascending=False).index.tolist()
+    for k in range(1, p + 1):
+        corr_steps[str(k)] = eval_subset(corr_order[:k])
+        
+    min_rmse_k = min(range(1, p + 1), key=lambda k: sfs_steps[str(k)]['RMSE'])
+    
+    return {
+        "metadata": {
+            "name": dataset_name,
+            "target": target_col,
+            "unit": unit,
+            "desc": f"動態 Kaggle 資料集: {dataset_name}",
+            "optimal_k": min_rmse_k,
+            "max_k": p,
+            "rows": len(df_clean),
+            "features": feature_cols
+        },
+        "SFS": sfs_steps,
+        "SBS": sbs_steps,
+        "RFE": rfe_steps,
+        "Lasso": lasso_steps,
+        "Correlation": corr_steps,
+        "df_clean": df_clean
+    }
+
+# -----------------------------------------------------------------------------
+# 4. Sidebar: Dataset Selection & Controls
 # -----------------------------------------------------------------------------
 st.sidebar.header("📁 資料集選擇 (Dataset Selection)")
 
@@ -173,11 +502,180 @@ selected_dataset_label = st.sidebar.selectbox(
 )
 dataset_id = DATASET_MAP[selected_dataset_label]
 
-ds_data = master_precomputed.get(dataset_id, {})
-ds_meta = ds_data.get("metadata", {
-    "file": "accident_risk.csv", "target": "accident_risk", "unit": "Risk (0~1)", 
-    "desc": "道路事故風險", "optimal_k": 9, "max_k": 16, "rows": 5000, "features": []
-})
+custom_analysis_data = None
+df_raw = pd.DataFrame()
+
+if dataset_id == "custom_kaggle":
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🌐 輸入 Kaggle 資料集")
+    
+    if "kaggle_input_val" not in st.session_state:
+        st.session_state["kaggle_input_val"] = "mirichoi0218/insurance"
+        
+    kaggle_handle_raw = st.sidebar.text_input(
+        "Kaggle Dataset Handle 或網址:",
+        value=st.session_state["kaggle_input_val"],
+        help="輸入格式如: owner/dataset-name 或完整 Kaggle 網址"
+    )
+    
+    st.sidebar.markdown("**快速測試範例 (Quick Presets):**")
+    col_p1, col_p2 = st.sidebar.columns(2)
+    with col_p1:
+        if st.sidebar.button("醫療保費 (迴歸)"):
+            st.session_state["kaggle_input_val"] = "mirichoi0218/insurance"
+            st.rerun()
+        if st.sidebar.button("鳶尾花 (分類警訊)"):
+            st.session_state["kaggle_input_val"] = "uciml/iris"
+            st.rerun()
+    with col_p2:
+        if st.sidebar.button("加州房價 (迴歸)"):
+            st.session_state["kaggle_input_val"] = "camnugent/california-housing-prices"
+            st.rerun()
+        if st.sidebar.button("鐵達尼號 (分類警訊)"):
+            st.session_state["kaggle_input_val"] = "heptapod/titanic"
+            st.rerun()
+
+    uploaded_file = st.sidebar.file_uploader("或直接上傳 CSV 檔案 (Upload CSV):", type=["csv"])
+    
+    # Process custom Kaggle input or upload
+    parsed_handle = parse_kaggle_input(kaggle_handle_raw)
+    
+    df_loaded = None
+    target_dataset_name = parsed_handle
+    
+    if uploaded_file is not None:
+        try:
+            df_loaded = pd.read_csv(uploaded_file)
+            target_dataset_name = uploaded_file.name
+        except Exception as e:
+            st.sidebar.error(f"上傳 CSV 解析失敗: {e}")
+    elif parsed_handle:
+        if kagglehub is None:
+            st.sidebar.error("kagglehub 未安裝，無法自動下載 Kaggle 資料集。")
+        else:
+            try:
+                with st.spinner(f"正在從 Kaggle 下載 {parsed_handle}..."):
+                    download_dir = kagglehub.dataset_download(parsed_handle)
+                    csv_files = glob.glob(os.path.join(download_dir, "**", "*.csv"), recursive=True)
+                    if not csv_files:
+                        st.error(f"在 Kaggle 資料集 {parsed_handle} 中未找到任何 CSV 檔案。")
+                        st.stop()
+                    # Pick the largest/main CSV
+                    selected_csv = max(csv_files, key=os.path.getsize)
+                    df_loaded = pd.read_csv(selected_csv)
+            except Exception as e:
+                st.error(f"❌ 抓取 Kaggle 資料集失敗: {e}\n請確認資料集名稱是否正確，或此為需要登入的競賽資料集。")
+                st.stop()
+                
+    if df_loaded is None or df_loaded.empty:
+        st.info("請在左側輸入 Kaggle 資料集名稱或上傳 CSV 檔案以開始分析。")
+        st.stop()
+        
+    # Target detection and Task Classification
+    detection = detect_target_and_type(df_loaded)
+    target_col = detection["target"]
+    is_classification = detection["is_classification"]
+    
+    # -------------------------------------------------------------------------
+    # CLASSIFICATION WARNING BRANCH
+    # -------------------------------------------------------------------------
+    if is_classification:
+        st.markdown(f"""
+        <div class='clf-alert-card'>
+            <h2 style='color: #f43f5e; margin-top: 0; display: flex; align-items: center; gap: 10px;'>
+                ⚠️ 檢測為分類任務 (Classification Task Detected)
+            </h2>
+            <div style='font-size: 1.05rem; line-height: 1.7; color: #fecdd3;'>
+                <p>系統檢測到您輸入的 Kaggle 資料集 <strong>「{target_dataset_name}」</strong> 之目標變數 <code>{target_col}</code> 屬於<strong>分類任務</strong>！</p>
+                <ul>
+                    <li><strong>目標欄位:</strong> <code>{target_col}</code> (資料型態: <code>{detection['dtype']}</code>)</li>
+                    <li><strong>相異類別數:</strong> {detection['n_unique']} 個類別</li>
+                    <li><strong>判定依據:</strong> {detection['reason']}</li>
+                </ul>
+                <hr style='border: none; border-top: 1px solid rgba(244, 63, 94, 0.4); margin: 16px 0;'>
+                <h4 style='color: #fff; margin-bottom: 6px;'>📢 系統溫馨提醒：</h4>
+                <p style='color: #fda4af; margin-bottom: 12px;'>
+                    本實驗室為<strong>「連續數值多元線性迴歸 (Multiple Linear Regression) 與特徵選擇」</strong>專用系統，模型假設目標變數為連續分佈之實數值。<br>
+                    <strong>請輸入用於「迴歸預測 (Regression)」的資料集</strong>（例如房價預測、保險費用、房屋租金、氣候數值、銷售量預測等）！
+                </p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### 💡 點擊下方推薦的 Kaggle 迴歸資料集快速體驗：")
+        col_rec1, col_rec2, col_rec3 = st.columns(3)
+        with col_rec1:
+            if st.button("🏥 醫療保費預測 (charges)\n`mirichoi0218/insurance`"):
+                st.session_state["kaggle_input_val"] = "mirichoi0218/insurance"
+                st.rerun()
+        with col_rec2:
+            if st.button("🏡 加州房價預測 (house_value)\n`camnugent/california-housing-prices`"):
+                st.session_state["kaggle_input_val"] = "camnugent/california-housing-prices"
+                st.rerun()
+        with col_rec3:
+            if st.button("🍷 紅酒品質預測 (quality)\n`uciml/red-wine-quality-cortez-et-al-2009`"):
+                st.session_state["kaggle_input_val"] = "uciml/red-wine-quality-cortez-et-al-2009"
+                st.rerun()
+                
+        with st.expander("📂 點擊查看此分類資料集之原始數據預覽"):
+            st.dataframe(df_loaded.head(100), use_container_width=True)
+            
+        st.stop()
+        
+    # -------------------------------------------------------------------------
+    # REGRESSION CONFIRMED BRANCH
+    # -------------------------------------------------------------------------
+    st.markdown(f"""
+    <div class='reg-success-card'>
+        <h4 style='color: #38ef7d; margin: 0 0 6px 0;'>✅ 資料集型態確認：連續數值迴歸預測 (Regression Task Confirmed)</h4>
+        <div style='color: #d1fae5; font-size: 0.92rem;'>
+            <strong>資料集:</strong> {target_dataset_name} | <strong>目標變數:</strong> <code>{target_col}</code> | <strong>樣本數:</strong> {len(df_loaded):,} | <strong>判定說明:</strong> {detection['reason']}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Cache dynamic analysis in session_state to prevent re-computing on UI slider interactions
+    cache_key = f"cache_{target_dataset_name}_{target_col}"
+    if cache_key in st.session_state:
+        custom_analysis_data = st.session_state[cache_key]
+    else:
+        with st.spinner("正在進行特徵選擇 (SFS, SBS, RFE, Lasso, Correlation) 與 OLS 統計診斷..."):
+            custom_analysis_data = build_dynamic_dataset_analysis(df_loaded, target_col, target_dataset_name, unit="Units")
+            st.session_state[cache_key] = custom_analysis_data
+            
+    ds_data = custom_analysis_data
+    ds_meta = ds_data["metadata"]
+    df_raw = ds_data["df_clean"]
+
+else:
+    # Built-in 8 datasets
+    ds_data = master_precomputed.get(dataset_id, {})
+    ds_meta = ds_data.get("metadata", {
+        "file": "accident_risk.csv", "target": "accident_risk", "unit": "Risk (0~1)", 
+        "desc": "道路事故風險", "optimal_k": 9, "max_k": 16, "rows": 5000, "features": []
+    })
+    
+    @st.cache_data
+    def load_dataset_csv(filename):
+        base_dir = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else "."
+        paths = [
+            os.path.join(base_dir, "data", filename),
+            os.path.join("L04_2", "data", filename),
+            os.path.join("data", filename),
+            filename
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                try:
+                    return pd.read_csv(p)
+                except Exception:
+                    try:
+                        return pd.read_csv(p, encoding="latin-1")
+                    except Exception:
+                        pass
+        return pd.DataFrame()
+
+    df_raw = load_dataset_csv(ds_meta["file"])
 
 st.sidebar.markdown(f"""
 🎯 **目標變數**: `{ds_meta['target']}`  
@@ -241,34 +739,12 @@ st.sidebar.markdown("""
 - **評估指標**: RMSE, R², Adj R², MAE, F-stat
 - **診斷分析**: OLS 標準誤, t檢定, p值, 95% CI, VIF
 - **即時模擬**: What-If 預測計算機
-- **殘差檢定**: 測試集前 15 筆誤差明細 & 散佈圖
+- **動態擴充**: 支援任何 Kaggle 迴歸資料集
 """)
 
 # -----------------------------------------------------------------------------
-# 4. Data Loading & Extraction
+# 5. Method Evaluation & Step Extraction
 # -----------------------------------------------------------------------------
-@st.cache_data
-def load_dataset_csv(filename):
-    base_dir = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else "."
-    paths = [
-        os.path.join(base_dir, "data", filename),
-        os.path.join("L04_2", "data", filename),
-        os.path.join("data", filename),
-        filename
-    ]
-    for p in paths:
-        if os.path.exists(p):
-            try:
-                return pd.read_csv(p)
-            except Exception:
-                try:
-                    return pd.read_csv(p, encoding="latin-1")
-                except Exception:
-                    pass
-    return pd.DataFrame()
-
-df_raw = load_dataset_csv(ds_meta["file"])
-
 def get_algo_key(algo_name):
     if "Backward" in algo_name or "SBS" in algo_name: return "SBS"
     elif "Forward" in algo_name or "SFS" in algo_name: return "SFS"
@@ -276,10 +752,11 @@ def get_algo_key(algo_name):
     elif "Lasso" in algo_name: return "Lasso"
     else: return "Correlation"
 
-def evaluate_method(ds_id, algo_name):
+def evaluate_method(ds_id, algo_name, active_ds_data=None):
     algo_key = get_algo_key(algo_name)
-    if ds_id in master_precomputed and algo_key in master_precomputed[ds_id]:
-        steps = master_precomputed[ds_id][algo_key]
+    data_source = active_ds_data if active_ds_data is not None else master_precomputed.get(ds_id, {})
+    if algo_key in data_source:
+        steps = data_source[algo_key]
         num_steps = len(steps)
         results = []
         for k in range(1, num_steps + 1):
@@ -303,10 +780,10 @@ def evaluate_method(ds_id, algo_name):
         return results
     return []
 
-current_results = evaluate_method(dataset_id, selected_algo)
+current_results = evaluate_method(dataset_id, selected_algo, active_ds_data=ds_data)
 
 if not current_results:
-    st.error(f"無法載入 {selected_dataset_label} 之預計算指標。")
+    st.error(f"無法載入 {selected_dataset_label} 之計算指標。")
     st.stop()
 
 # Safe retrieval of selected_step
@@ -316,14 +793,14 @@ selected_step = next(
 )
 
 # -----------------------------------------------------------------------------
-# 5. Header and Summary Display
+# 6. Header and Summary Display
 # -----------------------------------------------------------------------------
 st.markdown("<div class='main-title'>MULTIPLE LINEAR REGRESSION & FEATURE SELECTION EXPLORER</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Inspired by AIoT-DIC2 MultipleLR Architecture · Top 5 Algorithms · Real-time OLS Diagnostics & Interactive Simulator</div>", unsafe_allow_html=True)
 
 st.markdown(f"""
 <div class='dataset-badge'>
-    📁 ACTIVE: <strong>{selected_dataset_label}</strong> | 目標: <strong>{ds_meta['target']} ({ds_meta['unit']})</strong> | 樣本: <strong>{ds_meta['rows']}</strong> | 維度: <strong>{len(current_results)} 特徵</strong>
+    📁 ACTIVE: <strong>{selected_dataset_label}</strong> | 目標: <strong>{ds_meta['target']} ({ds_meta['unit']})</strong> | 樣本: <strong>{ds_meta['rows']:,}</strong> | 維度: <strong>{len(current_results)} 特徵</strong>
 </div>
 """, unsafe_allow_html=True)
 
@@ -362,7 +839,7 @@ else:
 st.markdown(occam_html, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. Top 5 Summary Metrics Cards (Exact match to reference site)
+# 7. Top 5 Summary Metrics Cards (Exact match to reference site)
 # -----------------------------------------------------------------------------
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -385,7 +862,7 @@ col5.metric("F-Statistic", f"{f_val:,.1f}", delta=f"p {p_str}")
 col5.caption("全體模型顯著性檢定")
 
 # -----------------------------------------------------------------------------
-# 7. Dual Subplots (RMSE & R-squared by Number of Features)
+# 8. Dual Subplots (RMSE & R-squared by Number of Features)
 # -----------------------------------------------------------------------------
 st.markdown("---")
 st.markdown("### 📊 評估指標圖表 (RMSE & R-squared by Number of Features)")
@@ -403,10 +880,8 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.2), dpi=100)
 
 # Left Subplot: RMSE by Number of Features
 ax1.plot(df_plot['Number of Features'], df_plot['RMSE'], marker='o', color='#1f77b4', linewidth=2.2, markersize=6, label="RMSE Curve")
-# Mark Sweet Spot
 sweet_step = next(item for item in current_results if item["k"] == optimal_k)
 ax1.plot(optimal_k, sweet_step['RMSE'], marker='*', color='#38ef7d', markersize=14, label=f"Sweet Spot k={optimal_k}")
-# Mark Selected
 ax1.plot(k_selected, selected_step['RMSE'], marker='o', color='#ffd700', markersize=11, markeredgecolor='#111827', markeredgewidth=2.2, label=f"Selected k={k_selected}")
 ax1.set_title('RMSE by Number of Features (Lower is Better)', fontsize=13, fontweight='bold', pad=12)
 ax1.set_xlabel('Number of Features (k)', fontsize=11)
@@ -431,7 +906,7 @@ plt.tight_layout()
 st.pyplot(fig)
 
 # -----------------------------------------------------------------------------
-# 8. Progression Table (Exact match to Notebook Style)
+# 9. Progression Table (Exact match to Notebook Style)
 # -----------------------------------------------------------------------------
 st.markdown("### 📋 特徵篩選步階評估表 (Evaluation Progression Table)")
 st.caption(f"資料集: **{selected_dataset_label}** | 演算法: **{selected_algo}** | Holdout 測試集 20% (random_state=0)")
@@ -456,7 +931,7 @@ st.dataframe(
 )
 
 # -----------------------------------------------------------------------------
-# 9. Cross-Algorithm Comparison Chart (Comparing 5 Feature Selection Methods)
+# 10. Cross-Algorithm Comparison Chart (Comparing 5 Feature Selection Methods)
 # -----------------------------------------------------------------------------
 st.markdown("---")
 st.markdown(f"### 📈 五大特徵選擇演算法全景對比圖 ({selected_dataset_label.split(' (')[0]})")
@@ -464,7 +939,7 @@ st.caption(f"比較 SBS、SFS、RFE、Lasso、Correlation 在特徵數 k = 1 到
 
 comp_results = {}
 for algo in algorithms:
-    comp_results[algo] = evaluate_method(dataset_id, algo)
+    comp_results[algo] = evaluate_method(dataset_id, algo, active_ds_data=ds_data)
 
 fig_comp, (ax_c1, ax_c2) = plt.subplots(1, 2, figsize=(14, 5.2), dpi=100)
 
@@ -498,7 +973,7 @@ plt.tight_layout()
 st.pyplot(fig_comp)
 
 # -----------------------------------------------------------------------------
-# 10. Model Coefficients & Statistical Diagnostics Table (OLS Inference & VIF)
+# 11. Model Coefficients & Statistical Diagnostics Table (OLS Inference & VIF)
 # -----------------------------------------------------------------------------
 st.markdown("---")
 st.markdown(f"### 🔬 多元線性迴歸係數與統計推論檢驗表 (OLS Diagnostics & VIF · k = {k_selected})")
@@ -507,10 +982,8 @@ st.caption("包含迴歸係數估計、標準誤 (SE)、t 統計量、雙尾 p �
 diag_data = selected_step.get('diagnostics', [])
 if diag_data:
     df_diag = pd.DataFrame(diag_data)
-    # Ensure VIF is consistent string format to avoid PyArrow mixed type issues
     if 'vif' in df_diag.columns:
         df_diag['vif'] = df_diag['vif'].apply(lambda v: f"{v:.2f}" if isinstance(v, (int, float)) else str(v))
-    # Rename columns for clarity
     df_diag_disp = df_diag.rename(columns={
         'feature': 'Predictor / Variable',
         'beta': 'Estimate (Beta)',
@@ -527,7 +1000,7 @@ if diag_data:
     st.caption("顯著性標示: `***` p < 0.001 | `**` p < 0.01 | `*` p < 0.05 | `ns` p ≥ 0.05；VIF 閾值: `< 5.0` 安全 | `5 ~ 10` 中度 | `> 10.0` 高度共線性")
 
 # -----------------------------------------------------------------------------
-# 11. Fitted OLS Mathematical Equation & Beta Weights Bar Charts
+# 12. Fitted OLS Mathematical Equation & Beta Weights Bar Charts
 # -----------------------------------------------------------------------------
 st.markdown("### 📐 多元線性迴歸模型擬合方程式 (Fitted OLS Equation)")
 
@@ -567,7 +1040,7 @@ with col_imp:
     st.pyplot(fig_imp)
 
 # -----------------------------------------------------------------------------
-# 12. Actual vs Predicted Diagnostic Scatter Plot (實際值 vs 預測值走勢圖)
+# 13. Actual vs Predicted Diagnostic Scatter Plot (實際值 vs 預測值走勢圖)
 # -----------------------------------------------------------------------------
 st.markdown("---")
 st.markdown(f"### 🎯 實際值 vs 預測值走勢散佈圖 (Actual vs. Predicted Diagnostic Plot)")
@@ -579,7 +1052,6 @@ if test_samples:
     actuals = [ts['actual'] for ts in test_samples]
     preds = [ts['predicted'] for ts in test_samples]
     
-    # 45-degree reference line
     min_val = min(min(actuals), min(preds))
     max_val = max(max(actuals), max(preds))
     pad = (max_val - min_val) * 0.08
@@ -597,7 +1069,7 @@ if test_samples:
     st.pyplot(fig_act_pred)
 
 # -----------------------------------------------------------------------------
-# 13. Holdout Test Set Prediction & Residual Analysis Table
+# 14. Holdout Test Set Prediction & Residual Analysis Table
 # -----------------------------------------------------------------------------
 st.markdown("### 📋 測試集樣本預測與殘差診斷表 (Test Set Residual Analysis Table)")
 st.caption("檢驗測試樣本之實際值、預測值、殘差 (Residual)、絕對誤差與百分比誤差")
@@ -627,7 +1099,7 @@ if test_samples:
     )
 
 # -----------------------------------------------------------------------------
-# 14. Live Interactive Predictor (即時預測計算機 / What-If Scenario Simulator)
+# 15. Live Interactive Predictor (即時預測計算機 / What-If Scenario Simulator)
 # -----------------------------------------------------------------------------
 st.markdown("---")
 st.markdown(f"### 🧮 即時預測計算機 (Live Interactive What-If Scenario Simulator)")
@@ -639,7 +1111,6 @@ feat_cols_ui = st.columns(cols_per_row)
 
 for idx, f in enumerate(feats):
     ui_col = feat_cols_ui[idx % cols_per_row]
-    # Get stats from df_raw if available
     if not df_raw.empty and f in df_raw.columns:
         f_min = float(df_raw[f].min())
         f_max = float(df_raw[f].max())
@@ -662,7 +1133,6 @@ for idx, f in enumerate(feats):
             val = st.number_input(f"[{f}]", value=1.0, key=f"sim_{dataset_id}_{f}")
             sim_inputs[f] = val
 
-# Compute dynamic live prediction
 sim_pred = intercept
 sim_contributions = [{"Feature": "(Intercept)", "Value": 1.0, "Beta": intercept, "Contribution": intercept}]
 
@@ -698,7 +1168,7 @@ with st.expander("🔍 展開特徵貢獻度明細分解 (Feature Contribution B
     )
 
 # -----------------------------------------------------------------------------
-# 15. Theory Expander
+# 16. Theory Expander
 # -----------------------------------------------------------------------------
 st.markdown("---")
 with st.expander("📖 點擊展開 Top 5 Feature Selection 演算法原理與複雜度對比", expanded=False):
@@ -712,7 +1182,7 @@ with st.expander("📖 點擊展開 Top 5 Feature Selection 演算法原理與�
     st.table(pd.DataFrame(algo_summary))
 
 # -----------------------------------------------------------------------------
-# 16. Raw Dataset Viewer
+# 17. Raw Dataset Viewer
 # -----------------------------------------------------------------------------
 if not df_raw.empty:
     with st.expander(f"📂 點擊查看 {selected_dataset_label} 原始資料集 (Raw Dataset, {len(df_raw)} Rows × {len(df_raw.columns)} Columns)"):
