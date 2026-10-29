@@ -16,8 +16,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 import os
+import sys
 import glob
 import time
+import importlib
 import scipy.stats as stats
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LassoCV
@@ -26,7 +28,7 @@ from sklearn.metrics import root_mean_squared_error, r2_score, mean_absolute_err
 
 try:
     import kagglehub
-except ImportError:
+except (ImportError, Exception):
     kagglehub = None
 
 # -----------------------------------------------------------------------------
@@ -183,17 +185,72 @@ def load_all_precomputed():
 master_precomputed = load_all_precomputed()
 
 # -----------------------------------------------------------------------------
-# 3. Dynamic Kaggle Fetching & Classification / Regression Detector
+# 3. Dynamic Kaggle & Dataset Mirrors / Classification & Regression Detector
 # -----------------------------------------------------------------------------
+KAGGLE_MIRROR_MAP = {
+    # Popular Regression Presets & Benchmarks (Direct raw CSV mirrors - 0 extra dependency, works everywhere)
+    "mirichoi0218/insurance": "https://raw.githubusercontent.com/stedy/Machine-Learning-with-R-datasets/master/insurance.csv",
+    "insurance": "https://raw.githubusercontent.com/stedy/Machine-Learning-with-R-datasets/master/insurance.csv",
+    "camnugent/california-housing-prices": "https://raw.githubusercontent.com/ageron/handson-ml2/master/datasets/housing/housing.csv",
+    "california-housing": "https://raw.githubusercontent.com/ageron/handson-ml2/master/datasets/housing/housing.csv",
+    "california-housing-prices": "https://raw.githubusercontent.com/ageron/handson-ml2/master/datasets/housing/housing.csv",
+    "uciml/red-wine-quality-cortez-et-al-2009": "https://raw.githubusercontent.com/aniruddhachoudhury/Red-Wine-Quality/master/winequality-red.csv",
+    "red-wine-quality": "https://raw.githubusercontent.com/aniruddhachoudhury/Red-Wine-Quality/master/winequality-red.csv",
+    "selva86/boston-housing": "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv",
+    "boston-housing": "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv",
+    "boston": "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv",
+    "farhanmd29/50-startups": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_1/50_Startups.csv",
+    "50-startups": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_1/50_Startups.csv",
+    "50_startups": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_1/50_Startups.csv",
+    "shivam2503/diamonds": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv",
+    "diamonds": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv",
+    "uciml/autompg-dataset": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv",
+    "auto-mpg": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv",
+    "mpg": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv",
+    "harlfoxem/housesalesprediction": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/kc_house_sales.csv",
+    "kc-house-sales": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/kc_house_sales.csv",
+    "sashank2810/spotifys-long-audio-features-dataset": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/spotify_tracks.csv",
+    "spotify-tracks": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/spotify_tracks.csv",
+    "muhammetvarl/laptop-price": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/laptop_price.csv",
+    "laptop-price": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/laptop_price.csv",
+    "marklvl/bike-sharing-dataset": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/bike_sharing.csv",
+    "bike-sharing": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/bike_sharing.csv",
+    "nehaldir/used-car-price-dataset": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/used_car_price.csv",
+    "used-car-price": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/used_car_price.csv",
+    "iamsouravbanerjee/house-rent-prediction-dataset": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/house_rent.csv",
+    "house-rent": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/house_rent.csv",
+    "nikhilmittal/flight-fare-prediction-mh": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/flight_ticket_price.csv",
+    "flight-ticket-price": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/flight_ticket_price.csv",
+    "playground-series-s5e10": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/accident_risk.csv",
+    "competitions/playground-series-s5e10": "https://raw.githubusercontent.com/AaronH945/AI_Security_HW/main/L04_2/data/accident_risk.csv",
+    
+    # Classification Presets / Warning Benchmarks
+    "uciml/iris": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+    "iris": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+    "saurabh00007/iriscsv": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+    "heptapod/titanic": "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv",
+    "titanic": "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv",
+    "c/titanic": "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv",
+    "uciml/breast-cancer-wisconsin-data": "https://raw.githubusercontent.com/selva86/datasets/master/BreastCancer.csv",
+    "breast-cancer": "https://raw.githubusercontent.com/selva86/datasets/master/BreastCancer.csv",
+    "uciml/pima-indians-diabetes-database": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+}
+
 def parse_kaggle_input(input_str):
+    if not input_str:
+        return ""
     input_str = input_str.strip()
-    if "kaggle.com/datasets/" in input_str:
-        parts = input_str.split("kaggle.com/datasets/")[1].split("?")[0].strip("/").split("/")
-        if len(parts) >= 2:
-            return f"{parts[0]}/{parts[1]}"
-    elif "kaggle.com/competitions/" in input_str:
-        comp = input_str.split("kaggle.com/competitions/")[1].split("?")[0].strip("/").split("/")[0]
-        return comp
+    if input_str.startswith("http://") or input_str.startswith("https://"):
+        if "kaggle.com/datasets/" in input_str:
+            parts = input_str.split("kaggle.com/datasets/")[1].split("?")[0].strip("/").split("/")
+            if len(parts) >= 2:
+                return f"{parts[0]}/{parts[1]}"
+        elif "kaggle.com/competitions/" in input_str:
+            comp = input_str.split("kaggle.com/competitions/")[1].split("?")[0].strip("/").split("/")
+            if comp:
+                return comp[0]
+        # Direct URL (e.g., https://raw.githubusercontent.com/... or other CSV)
+        return input_str
     return input_str
 
 def detect_target_and_type(df, user_target=None):
@@ -542,33 +599,89 @@ if dataset_id == "custom_kaggle":
     
     df_loaded = None
     target_dataset_name = parsed_handle
+    load_source_desc = ""
     
     if uploaded_file is not None:
         try:
             df_loaded = pd.read_csv(uploaded_file)
             target_dataset_name = uploaded_file.name
+            load_source_desc = "📁 本地上傳檔案 (Uploaded CSV)"
         except Exception as e:
             st.sidebar.error(f"上傳 CSV 解析失敗: {e}")
     elif parsed_handle:
-        if kagglehub is None:
-            st.sidebar.error("kagglehub 未安裝，無法自動下載 Kaggle 資料集。")
-        else:
+        handle_clean = parsed_handle.lower().strip()
+        
+        # 1. Direct Web CSV URL
+        if parsed_handle.startswith("http://") or parsed_handle.startswith("https://"):
             try:
-                with st.spinner(f"正在從 Kaggle 下載 {parsed_handle}..."):
+                with st.spinner(f"正在從 URL 下載資料集: {parsed_handle[:50]}..."):
+                    df_loaded = pd.read_csv(parsed_handle)
+                    target_dataset_name = parsed_handle.split("/")[-1].split("?")[0] or "Web Dataset"
+                    load_source_desc = "🌐 公開網址 (Direct HTTP URL)"
+            except Exception as e:
+                st.sidebar.error(f"URL 下載失敗: {e}")
+                
+        # 2. Check Built-in Instant Mirror Map (Direct HTTP download, 100% works without kagglehub!)
+        elif handle_clean in KAGGLE_MIRROR_MAP:
+            mirror_url = KAGGLE_MIRROR_MAP[handle_clean]
+            try:
+                with st.spinner(f"正在載入資料集「{parsed_handle}」..."):
+                    df_loaded = pd.read_csv(mirror_url)
+                    target_dataset_name = parsed_handle
+                    load_source_desc = "⚡ 即時雲端鏡像 (Direct HTTP Mirror - 免安裝 kagglehub)"
+            except Exception as e:
+                st.sidebar.error(f"鏡像載入失敗: {e}")
+
+        # 3. If kagglehub is available in environment, download from Kaggle API
+        elif kagglehub is not None:
+            try:
+                with st.spinner(f"正在透過 KaggleHub 下載 {parsed_handle}..."):
                     download_dir = kagglehub.dataset_download(parsed_handle)
                     csv_files = glob.glob(os.path.join(download_dir, "**", "*.csv"), recursive=True)
                     if not csv_files:
                         st.error(f"在 Kaggle 資料集 {parsed_handle} 中未找到任何 CSV 檔案。")
                         st.stop()
-                    # Pick the largest/main CSV
                     selected_csv = max(csv_files, key=os.path.getsize)
                     df_loaded = pd.read_csv(selected_csv)
+                    target_dataset_name = parsed_handle
+                    load_source_desc = "📦 KaggleHub API 下載"
             except Exception as e:
-                st.error(f"❌ 抓取 Kaggle 資料集失敗: {e}\n請確認資料集名稱是否正確，或此為需要登入的競賽資料集。")
+                st.error(f"❌ 抓取 Kaggle 資料集失敗: {e}\n請確認資料集名稱是否正確，或此為需要登入授權的競賽資料集。")
                 st.stop()
+
+        # 4. If not in mirror map and kagglehub is not installed
+        else:
+            is_wasm = "pyodide" in sys.modules or sys.platform == "emscripten"
+            if not is_wasm:
+                st.sidebar.warning(f"⚠️ 本機 Python 環境尚未安裝 kagglehub 套件，無法自動抓取未收錄之 Kaggle 資料集「{parsed_handle}」。")
+                if st.sidebar.button("🚀 點擊為本機自動安裝 kagglehub (pip install)"):
+                    with st.spinner("正在執行 pip install kagglehub，請稍候..."):
+                        try:
+                            import subprocess
+                            subprocess.check_call([sys.executable, "-m", "pip", "install", "kagglehub"])
+                            st.sidebar.success("🎉 kagglehub 安裝成功！正在重新載入...")
+                            time.sleep(1)
+                            st.rerun()
+                        except Exception as e:
+                            st.sidebar.error(f"自動安裝失敗: {e}，請手動在終端機執行: pip install kagglehub")
+                st.sidebar.info(
+                    "💡 **建議替代方案**：\n"
+                    "1. 點擊上方的「快速測試範例」（已內建即時鏡像）\n"
+                    "2. 於輸入框直接貼上該 CSV 的公開 Raw 下載連結\n"
+                    "3. 於下方「上傳 CSV 檔案」手動上傳"
+                )
+            else:
+                st.sidebar.info(
+                    "🌐 **GitHub Pages 瀏覽器端執行提示**：\n"
+                    "瀏覽器沙盒限制無法直接呼叫本機終端工具下載未收錄之 Kaggle 資料集。\n\n"
+                    "**建議使用方式**：\n"
+                    "1. 點擊上方的快速測試範例（內建即時鏡像）\n"
+                    "2. 於輸入框直接貼上任何公開 CSV 檔案網址\n"
+                    "3. 於下方「上傳 CSV 檔案」選取本機檔案"
+                )
                 
     if df_loaded is None or df_loaded.empty:
-        st.info("請在左側輸入 Kaggle 資料集名稱或上傳 CSV 檔案以開始分析。")
+        st.info("請在左側輸入 Kaggle 資料集名稱、貼上 CSV 網址或上傳 CSV 檔案以開始分析。")
         st.stop()
         
     # Target detection and Task Classification
@@ -629,7 +742,7 @@ if dataset_id == "custom_kaggle":
     <div class='reg-success-card'>
         <h4 style='color: #38ef7d; margin: 0 0 6px 0;'>✅ 資料集型態確認：連續數值迴歸預測 (Regression Task Confirmed)</h4>
         <div style='color: #d1fae5; font-size: 0.92rem;'>
-            <strong>資料集:</strong> {target_dataset_name} | <strong>目標變數:</strong> <code>{target_col}</code> | <strong>樣本數:</strong> {len(df_loaded):,} | <strong>判定說明:</strong> {detection['reason']}
+            <strong>資料集:</strong> {target_dataset_name} | <strong>來源:</strong> {load_source_desc} | <strong>目標變數:</strong> <code>{target_col}</code> | <strong>樣本數:</strong> {len(df_loaded):,} | <strong>判定說明:</strong> {detection['reason']}
         </div>
     </div>
     """, unsafe_allow_html=True)
