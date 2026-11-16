@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 1400 990">
+<style>
+  .title{font:700 36px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#fff}
+  .subtitle{font:600 16px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#dbeafe}
+  .ptitle{font:700 21px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#fff}
+  .num{font:800 20px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#fff}
+  .h{font:700 18px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#0f172a}
+  .body{font:500 15px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#1f2937}
+  .small{font:500 13px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#334155}
+  .tiny{font:500 11px "Noto Sans TC","Microsoft JhengHei",sans-serif;fill:#475569}
+  .tag{font:700 13px "Noto Sans TC","Microsoft JhengHei",sans-serif}
+</style>
+
+<rect width="1400" height="990" fill="#f8fafc"/>
+<rect x="0" y="0" width="1400" height="64" fill="#0b4a7f"/>
+<text x="36" y="43" class="title">智慧跌倒監控與緊急應變系統｜Proposal Spotlight</text>
+<rect x="1030" y="14" width="335" height="34" rx="17" fill="#e0f2fe"/>
+<text x="1198" y="36" text-anchor="middle" class="small" fill="#0c4a6e">DLFD × AI Agent × State Machine × Emergency Response</text>
+<g>
+  <rect x="20" y="80" width="350" height="330" rx="16" fill="#ffffff" stroke="#155e75" stroke-width="3"/>
+  <rect x="20" y="80" width="350" height="46" rx="16" fill="#155e75"/>
+  <circle cx="50" cy="103" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="50" y="110" text-anchor="middle" class="num">01</text>
+  <text x="78" y="110" class="ptitle">研究故事線 A–F（A2Z 六段式）</text>
+  
+  <text x="40" y="145" class="h">A Motivation</text>
+  <text x="55" y="170" class="body" font-size="14">• 高齡化、跌倒死亡與 Long-lie 風險</text><text x="55" y="192" class="body" font-size="14">• WHO 與臺灣超高齡社會背景</text>
+  <text x="40" y="225" class="h">B Challenge</text>
+  <text x="55" y="250" class="body" font-size="14">• ADL 誤判：蹲下、彎腰、躺沙發</text><text x="55" y="272" class="body" font-size="14">• Alarm Fatigue；單向 FALL→Alarm</text>
+  <text x="40" y="305" class="h">C–F Solution → Method → Evaluation → Outcome</text>
+  <text x="55" y="330" class="body" font-size="14">• 骨架式 DLFD + LLM AI Agent</text><text x="55" y="352" class="body" font-size="14">• 八階段閉環：Observe→Ask→Assess→Respond</text><text x="55" y="374" class="body" font-size="14">• TEST A–F；No-response；LLM Fallback</text>
+
+</g>
+<g>
+  <rect x="385" y="80" width="350" height="330" rx="16" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+  <rect x="385" y="80" width="350" height="46" rx="16" fill="#2563eb"/>
+  <circle cx="415" cy="103" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="415" y="110" text-anchor="middle" class="num">02</text>
+  <text x="443" y="110" class="ptitle">Related Work / Domain Balance</text>
+  
+  <text x="405" y="145" class="h">2.1 1/2 AI Technology</text>
+  <text x="420" y="170" class="body" font-size="14">• Pose + ST-GCN / skeleton spatiotemporal modeling</text><text x="420" y="192" class="body" font-size="14">• mmWave / Wi-Fi CSI / Edge AIoT</text><text x="420" y="214" class="body" font-size="14">• LLM Adapter + Pydantic structured intent</text>
+  <text x="405" y="250" class="h">2.2 1/2 Domain Know-how</text>
+  <text x="420" y="275" class="body" font-size="14">• Fall biomechanics + Long-lie</text><text x="420" y="297" class="body" font-size="14">• Alarm Fatigue</text><text x="420" y="319" class="body" font-size="14">• Privacy + Interactive Escalation</text>
+  <text x="405" y="355" class="h">2.3 Research Gap</text>
+  <text x="420" y="380" class="small">Existing → Limitations → Gap → Our Positioning</text>
+  <text x="420" y="400" class="tiny">由單次判讀升級為可互動、可追蹤、可升級的閉環事件管理。</text>
+
+</g>
+<g>
+  <rect x="750" y="80" width="310" height="330" rx="16" fill="#ffffff" stroke="#0f766e" stroke-width="3"/>
+  <rect x="750" y="80" width="310" height="46" rx="16" fill="#0f766e"/>
+  <circle cx="780" cy="103" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="780" y="110" text-anchor="middle" class="num">03</text>
+  <text x="808" y="110" class="ptitle">五個核心思維</text>
+  
+  <text x="770" y="145" class="body" font-size="15">• 3.1 跌倒是時序事件：Joint / Bone / Motion</text><text x="770" y="189" class="body" font-size="15">• 3.2 降低誤報與提升檢出同等重要</text><text x="770" y="233" class="body" font-size="15">• 3.3 感知模型與 Agent 職責分離</text><text x="770" y="277" class="body" font-size="15">• 3.4 跌倒後狀態比瞬間更重要</text><text x="770" y="321" class="body" font-size="15">• 3.5 Benchmark ≠ 真實部署可靠性</text>
+  <rect x="770" y="355" width="270" height="35" rx="8" fill="#ccfbf1"/>
+  <text x="905" y="378" text-anchor="middle" class="small">Threshold Calibration → Fine-tuning</text>
+
+</g>
+<g>
+  <rect x="1075" y="80" width="305" height="330" rx="16" fill="#ffffff" stroke="#6d28d9" stroke-width="3"/>
+  <rect x="1075" y="80" width="305" height="46" rx="16" fill="#6d28d9"/>
+  <circle cx="1105" cy="103" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="1105" y="110" text-anchor="middle" class="num">04</text>
+  <text x="1133" y="110" class="ptitle">三大專業爭論</text>
+  
+  <text x="1095" y="145" class="h">4.1 感測技術路線</text>
+  <text x="1110" y="170" class="small">Wearable IMU ↔ Radar ↔ Skeleton Vision</text>
+  <text x="1095" y="220" class="h">4.2 安全決策權</text>
+  <text x="1110" y="245" class="small">LLM 自由決策 ↔ Deterministic Policy</text>
+  <text x="1095" y="295" class="h">4.3 跌倒判定邊界</text>
+  <text x="1110" y="320" class="small">幾何閾值 ↔ 時序緩衝 + 語音雙重確認</text>
+  <rect x="1095" y="355" width="260" height="34" rx="8" fill="#ede9fe"/>
+  <text x="1225" y="377" text-anchor="middle" class="small">Consensus：安全關鍵決策不交給 LLM</text>
+
+</g>
+<g>
+  <rect x="20" y="425" width="900" height="260" rx="16" fill="#ffffff" stroke="#0369a1" stroke-width="3"/>
+  <rect x="20" y="425" width="900" height="46" rx="16" fill="#0369a1"/>
+  <circle cx="50" cy="448" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="50" y="455" text-anchor="middle" class="num">05</text>
+  <text x="78" y="455" class="ptitle">Proposed Scheme — 8 大系統模組</text>
+  
+  <g>
+  <rect x="40" y="500" width="200" height="66" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <circle cx="58" cy="518" r="13" fill="#0284c7"/><text x="58" y="523" text-anchor="middle" class="num" font-size="13">1</text>
+    <text x="78" y="520" class="h" font-size="14">Scenario</text>
+    <text x="52" y="543" class="tiny">高齡居家／獨居／長照／醫療</text><rect x="255" y="500" width="200" height="66" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <circle cx="273" cy="518" r="13" fill="#0284c7"/><text x="273" y="523" text-anchor="middle" class="num" font-size="13">2</text>
+    <text x="293" y="520" class="h" font-size="14">Input</text>
+    <text x="267" y="543" class="tiny">Webcam／Video／Text／Voice</text><rect x="470" y="500" width="200" height="66" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <circle cx="488" cy="518" r="13" fill="#0284c7"/><text x="488" y="523" text-anchor="middle" class="num" font-size="13">3</text>
+    <text x="508" y="520" class="h" font-size="14">Planner</text>
+    <text x="482" y="543" class="tiny">Fall Response Orchestrator + State Machine</text><rect x="685" y="500" width="200" height="66" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <circle cx="703" cy="518" r="13" fill="#0284c7"/><text x="703" y="523" text-anchor="middle" class="num" font-size="13">4</text>
+    <text x="723" y="520" class="h" font-size="14">Retrieval</text>
+    <text x="697" y="543" class="tiny">RGB／Skeleton／Event DB／Voice Context</text><rect x="40" y="585" width="200" height="66" rx="10" fill="#ecfeff" stroke="#7dd3fc"/>
+    <circle cx="58" cy="603" r="13" fill="#0284c7"/><text x="58" y="608" text-anchor="middle" class="num" font-size="13">5</text>
+    <text x="78" y="605" class="h" font-size="14">Analytics</text>
+    <text x="52" y="628" class="tiny">Pose → Buffer → DLFD (J/B/M) → Post-Fall</text><rect x="255" y="585" width="200" height="66" rx="10" fill="#ecfeff" stroke="#7dd3fc"/>
+    <circle cx="273" cy="603" r="13" fill="#0284c7"/><text x="273" y="608" text-anchor="middle" class="num" font-size="13">6</text>
+    <text x="293" y="605" class="h" font-size="14">Knowledge</text>
+    <text x="267" y="628" class="tiny">ADL／Long-lie／Recovery／Emergency Rules</text><rect x="470" y="585" width="200" height="66" rx="10" fill="#ecfeff" stroke="#7dd3fc"/>
+    <circle cx="488" cy="603" r="13" fill="#0284c7"/><text x="488" y="608" text-anchor="middle" class="num" font-size="13">7</text>
+    <text x="508" y="605" class="h" font-size="14">Decision</text>
+    <text x="482" y="628" class="tiny">LOW→EMERGENCY；SAFE/HELP/NO_RESPONSE</text><rect x="685" y="585" width="200" height="66" rx="10" fill="#ecfeff" stroke="#7dd3fc"/>
+    <circle cx="703" cy="603" r="13" fill="#0284c7"/><text x="703" y="608" text-anchor="middle" class="num" font-size="13">8</text>
+    <text x="723" y="605" class="h" font-size="14">Output</text>
+    <text x="697" y="628" class="tiny">Web／Agent／STT-TTS／Event Log／Alert</text>
+  </g>
+
+</g>
+<g>
+  <rect x="935" y="425" width="445" height="260" rx="16" fill="#ffffff" stroke="#0f766e" stroke-width="3"/>
+  <rect x="935" y="425" width="445" height="46" rx="16" fill="#0f766e"/>
+  <circle cx="965" cy="448" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="965" y="455" text-anchor="middle" class="num">06</text>
+  <text x="993" y="455" class="ptitle">閉環式應變工作流程（八階段）</text>
+  
+  <g>
+  <rect x="955" y="505" width="44" height="76" rx="8" fill="#fee2e2" stroke="#94a3b8"/>
+      <text x="977" y="532" text-anchor="middle" class="tiny" font-weight="700">FALL</text>
+      <text x="1001" y="548" class="small">→</text><rect x="1004" y="505" width="44" height="76" rx="8" fill="#dbeafe" stroke="#94a3b8"/>
+      <text x="1026" y="532" text-anchor="middle" class="tiny" font-weight="700">Observe</text>
+      <text x="1050" y="548" class="small">→</text><rect x="1053" y="505" width="44" height="76" rx="8" fill="#dbeafe" stroke="#94a3b8"/>
+      <text x="1075" y="532" text-anchor="middle" class="tiny" font-weight="700">Ask</text>
+      <text x="1099" y="548" class="small">→</text><rect x="1102" y="505" width="44" height="76" rx="8" fill="#dbeafe" stroke="#94a3b8"/>
+      <text x="1124" y="532" text-anchor="middle" class="tiny" font-weight="700">Understand</text>
+      <text x="1148" y="548" class="small">→</text><rect x="1151" y="505" width="44" height="76" rx="8" fill="#fef3c7" stroke="#94a3b8"/>
+      <text x="1173" y="532" text-anchor="middle" class="tiny" font-weight="700">Assess</text>
+      <text x="1197" y="548" class="small">→</text><rect x="1200" y="505" width="44" height="76" rx="8" fill="#ffedd5" stroke="#94a3b8"/>
+      <text x="1222" y="532" text-anchor="middle" class="tiny" font-weight="700">Respond</text>
+      <text x="1246" y="548" class="small">→</text><rect x="1249" y="505" width="44" height="76" rx="8" fill="#e0f2fe" stroke="#94a3b8"/>
+      <text x="1271" y="532" text-anchor="middle" class="tiny" font-weight="700">Monitor</text>
+      <text x="1295" y="548" class="small">→</text><rect x="1298" y="505" width="44" height="76" rx="8" fill="#dcfce7" stroke="#94a3b8"/>
+      <text x="1320" y="532" text-anchor="middle" class="tiny" font-weight="700">Recover / Escalate</text>
+      
+  </g>
+  <rect x="960" y="610" width="390" height="46" rx="10" fill="#f1f5f9"/>
+  <text x="1155" y="638" text-anchor="middle" class="h">傳統：FALL → Alarm　｜　本研究：閉環事件管理</text>
+
+</g>
+<g>
+  <rect x="20" y="700" width="420" height="220" rx="16" fill="#ffffff" stroke="#475569" stroke-width="3"/>
+  <rect x="20" y="700" width="420" height="46" rx="16" fill="#475569"/>
+  <circle cx="50" cy="723" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="50" y="730" text-anchor="middle" class="num">07</text>
+  <text x="78" y="730" class="ptitle">安全性與例外處理</text>
+  
+  <text x="42" y="765" class="body" font-size="13">• 7.1 LLM offline → Fallback to deterministic rules</text><text x="42" y="790" class="body" font-size="13">• 7.2 Pose Lost → LOST_TRACKING，不視為 Recovery</text><text x="42" y="815" class="body" font-size="13">• 7.3 STT failure → Retry / Text fallback</text><text x="42" y="840" class="body" font-size="13">• 7.4 NO_RESPONSE → deterministic timeout</text><text x="42" y="865" class="body" font-size="13">• 7.5 Notification failure → retry / alternative channel</text><text x="42" y="890" class="body" font-size="13">• 7.6 Privacy：LLM 不接收 RGB / raw skeleton</text>
+
+</g>
+<g>
+  <rect x="455" y="700" width="410" height="220" rx="16" fill="#ffffff" stroke="#1d4ed8" stroke-width="3"/>
+  <rect x="455" y="700" width="410" height="46" rx="16" fill="#1d4ed8"/>
+  <circle cx="485" cy="723" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="485" y="730" text-anchor="middle" class="num">08</text>
+  <text x="513" y="730" class="ptitle">TEST A–F 驗收場景</text>
+  
+  <text x="475" y="765" class="body" font-size="13">• A 正常 ADL → LOW / 無警報</text><text x="475" y="790" class="body" font-size="13">• B FALL +「我沒事」→ SAFE / 持續監控</text><text x="475" y="815" class="body" font-size="13">• C FALL +「我起不來」→ HELP / 模擬通報</text><text x="475" y="840" class="body" font-size="13">• D 模糊語意 → UNCERTAIN / LLM</text><text x="475" y="865" class="body" font-size="13">• E 30 秒無回應 → NO_RESPONSE / 升級</text><text x="475" y="890" class="body" font-size="13">• F LLM API 失效 → FALLBACK / Rules</text>
+
+</g>
+<g>
+  <rect x="880" y="700" width="300" height="220" rx="16" fill="#ffffff" stroke="#0f766e" stroke-width="3"/>
+  <rect x="880" y="700" width="300" height="46" rx="16" fill="#0f766e"/>
+  <circle cx="910" cy="723" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="910" y="730" text-anchor="middle" class="num">09</text>
+  <text x="938" y="730" class="ptitle">系統通訊架構</text>
+  
+  <text x="900" y="765" class="h">Browser / Web UI</text>
+  <text x="915" y="790" class="small">Webcam / Video / Text / Voice</text>
+  <text x="1030" y="815" text-anchor="middle" class="h">↓ WebSocket + HTTP REST</text>
+  <rect x="905" y="830" width="250" height="58" rx="10" fill="#ecfeff" stroke="#5eead4"/>
+  <text x="1030" y="854" text-anchor="middle" class="h">FastAPI Backend</text>
+  <text x="1030" y="878" text-anchor="middle" class="tiny">DLFD → Fall Response Agent → Policy Engine</text>
+
+</g>
+<g>
+  <rect x="1195" y="700" width="185" height="220" rx="16" fill="#ffffff" stroke="#ea580c" stroke-width="3"/>
+  <rect x="1195" y="700" width="185" height="46" rx="16" fill="#ea580c"/>
+  <circle cx="1225" cy="723" r="18" fill="#ffffff" opacity="0.18"/>
+  <text x="1225" y="730" text-anchor="middle" class="num">10</text>
+  <text x="1253" y="730" class="ptitle">最終 Spotlight</text>
+  
+  <text x="1212" y="765" class="h">核心創新</text>
+  <text x="1212" y="795" class="small">不是單一模型</text>
+  <text x="1212" y="820" class="small">而是整合：</text>
+  <text x="1220" y="845" class="body" font-size="12">• DLFD</text><text x="1220" y="863" class="body" font-size="12">• Post-Fall</text><text x="1220" y="881" class="body" font-size="12">• LLM Voice</text><text x="1220" y="899" class="body" font-size="12">• Policy Engine</text><text x="1220" y="917" class="body" font-size="12">• Emergency</text>
+
+</g>
+<rect x="20" y="935" width="1360" height="36" rx="12" fill="#e2e8f0"/>
+<text x="38" y="958" class="h" font-size="15">下一步實證指標：</text>
+<text x="190" y="958" class="small">Sensitivity · Specificity · Precision/Recall/F1 · ROC-AUC/PR-AUC · False Alarm Rate · Event-level Recall · Agent Response Latency · Voice Intent Accuracy · Recovery Detection Accuracy</text>
+</svg>
